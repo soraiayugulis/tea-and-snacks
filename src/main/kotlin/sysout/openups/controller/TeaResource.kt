@@ -15,7 +15,11 @@ class TeaResource @Inject constructor(
     private val teaService: TeaService
 ) {
     @GET
-    fun listAll() = teaService.listAll()
+    fun listFiltered(
+        @QueryParam("category") category: String?,
+        @QueryParam("caffeineLevel") caffeineLevel: String?,
+        @QueryParam("origin") origin: String?
+    ) = teaService.filterTeas(category, caffeineLevel, origin)
 
     @GET
     @Path("/{id}")

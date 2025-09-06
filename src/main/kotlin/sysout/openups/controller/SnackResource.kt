@@ -16,7 +16,10 @@ class SnackResource @Inject constructor(
     private val snackService: SnackService
 ) {
     @GET
-    fun listAll() = snackService.listAll()
+    fun listAll(
+        @QueryParam("vegan") vegan: Boolean?,
+        @QueryParam("flavour") flavour: String?
+    ): List<SnackDTO> = snackService.listAll(vegan, flavour)
 
     @GET
     @Path("/{id}")

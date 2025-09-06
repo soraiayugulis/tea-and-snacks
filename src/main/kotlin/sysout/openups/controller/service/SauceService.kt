@@ -38,6 +38,9 @@ class SauceService @Inject constructor(
         return exists
     }
 
+    fun filterSauces(flavour: String?): List<SauceDTO> =
+        sauceRepository.filterSauces(flavour).map { toDTO(it) }
+
     private fun toDTO(sauce: Sauce): SauceDTO = SauceDTO(
         id = sauce.id,
         name = sauce.name,

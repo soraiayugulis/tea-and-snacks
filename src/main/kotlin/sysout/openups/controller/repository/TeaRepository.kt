@@ -45,4 +45,12 @@ class TeaRepository {
     }
 
     fun listAll(): List<Tea> = teas.values.toList()
+
+    fun filterTeas(category: String?, caffeineLevel: String?, origin: String?): List<Tea> {
+        return teas.values.filter { tea ->
+            (category == null || tea.category.equals(category, ignoreCase = true)) &&
+            (caffeineLevel == null || tea.caffeineLevel.equals(caffeineLevel, ignoreCase = true)) &&
+            (origin == null || tea.origin.equals(origin, ignoreCase = true))
+        }
+    }
 }

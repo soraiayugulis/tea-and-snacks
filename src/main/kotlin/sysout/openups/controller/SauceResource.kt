@@ -15,7 +15,7 @@ class SauceResource @Inject constructor(
     private val sauceService: SauceService
 ) {
     @GET
-    fun listAll() = sauceService.listAll()
+    fun listFiltered(@QueryParam("flavour") flavour: String?) = sauceService.filterSauces(flavour)
 
     @GET
     @Path("/{id}")

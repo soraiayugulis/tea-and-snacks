@@ -44,6 +44,9 @@ class TeaService @Inject constructor(
         return exists
     }
 
+    fun filterTeas(category: String?, caffeineLevel: String?, origin: String?): List<TeaDTO> =
+        teaRepository.filterTeas(category, caffeineLevel, origin).map { toDTO(it) }
+
     private fun toDTO(tea: Tea): TeaDTO = TeaDTO(
         id = tea.id,
         name = tea.name,

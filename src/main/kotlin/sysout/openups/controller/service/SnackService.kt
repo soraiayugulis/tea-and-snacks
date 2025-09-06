@@ -15,7 +15,10 @@ class SnackService @Inject constructor(
     private val snackRepository: SnackRepository,
     private val sauceRepository: SauceRepository
 ) {
-    fun listAll(): List<SnackDTO> = snackRepository.listAll().map { toDTO(it) }
+    fun listAll(vegan: Boolean? = null, flavour: String? = null): List<SnackDTO> {
+        val snacks = snackRepository.filterSnacks(vegan, flavour)
+        return snacks.map { toDTO(it) }
+    }
 
     fun findById(id: UUID): SnackDTO? = snackRepository.findById(id)?.let { toDTO(it) }
 

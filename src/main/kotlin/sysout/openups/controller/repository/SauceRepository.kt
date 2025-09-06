@@ -39,4 +39,10 @@ class SauceRepository {
     }
 
     fun listAll(): List<Sauce> = sauces.values.toList()
+
+    fun filterSauces(flavour: String?): List<Sauce> {
+        return sauces.values.filter { sauce ->
+            flavour == null || sauce.flavour.equals(flavour, ignoreCase = true)
+        }
+    }
 }
