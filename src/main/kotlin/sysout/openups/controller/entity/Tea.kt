@@ -1,9 +1,6 @@
 package sysout.openups.controller.entity
 
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.util.*
 
 @Entity
@@ -15,6 +12,10 @@ open class Tea(
     var name: String = "",
     var origin: String = "",
     var description: String = "",
-    var category: String = "",
-    var caffeineLevel: String = ""
+
+    @Enumerated(EnumType.STRING)
+    var category: TeaCategory = TeaCategory.OTHER,
+
+    @Enumerated(EnumType.STRING)
+    var caffeineLevel: CaffeineLevel = CaffeineLevel.MEDIUM
 )

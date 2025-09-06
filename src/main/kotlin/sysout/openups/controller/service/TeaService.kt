@@ -3,8 +3,11 @@ package sysout.openups.controller.service
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import sysout.openups.controller.dto.TeaDTO
+import sysout.openups.controller.entity.CaffeineLevel
 import sysout.openups.controller.entity.Tea
+import sysout.openups.controller.entity.TeaCategory
 import sysout.openups.controller.repository.TeaRepository
+import sysout.openups.controller.util.EnumConverter
 import java.util.*
 
 @ApplicationScoped
@@ -44,8 +47,36 @@ class TeaService @Inject constructor(
         return exists
     }
 
-    fun filterTeas(category: String?, caffeineLevel: String?, origin: String?): List<TeaDTO> =
-        teaRepository.filterTeas(category, caffeineLevel, origin).map { toDTO(it) }
+    fun deleteAll(category: TeaCategory? = null, caffeineLevel: CaffeineLevel? = null, origin: String? = null): Int {
+        if (category == null && caffeineLevel == null && origin == null) {
+            val count = teaRepository.listAll().size
+            teaRepository.deleteAll()
+            return count
+        }
+
+        val teasToDelete = teaRepository.filterTeas(category, caffeineLevel, origin)
+        val count = teasToDelete.size
+
+        teasToDelete.forEach { tea ->
+            tea.id?.let { teaRepository.deleteById(it) }
+        }
+
+        return count
+    }
+
+    fun filterTeas(categoryStr: String?, caffeineLevelStr: String?, origin: String?): List<TeaDTO> {
+        val category = EnumConverter.fromString<TeaCategory>(categoryStr)
+        val caffeineLevel = EnumConverter.fromString<CaffeineLevel>(caffeineLevelStr)
+
+        return teaRepository.filterTeas(category, caffeineLevel, origin).map { toDTO(it) }
+    }
+
+    fun deleteFiltered(categoryStr: String?, caffeineLevelStr: String?, origin: String?): Int {
+        val category = EnumConverter.fromString<TeaCategory>(categoryStr)
+        val caffeineLevel = EnumConverter.fromString<CaffeineLevel>(caffeineLevelStr)
+
+        return deleteAll(category, caffeineLevel, origin)
+    }
 
     private fun toDTO(tea: Tea): TeaDTO = TeaDTO(
         id = tea.id,

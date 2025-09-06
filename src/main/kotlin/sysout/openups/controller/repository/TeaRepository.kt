@@ -1,7 +1,9 @@
 package sysout.openups.controller.repository
 
 import jakarta.enterprise.context.ApplicationScoped
+import sysout.openups.controller.entity.CaffeineLevel
 import sysout.openups.controller.entity.Tea
+import sysout.openups.controller.entity.TeaCategory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -31,6 +33,10 @@ class TeaRepository {
         teas.remove(id)
     }
 
+    fun deleteAll() {
+        teas.clear()
+    }
+
     fun update(id: UUID, tea: Tea): Tea? {
         return teas.computeIfPresent(id) { _, _ ->
             Tea(
@@ -46,10 +52,10 @@ class TeaRepository {
 
     fun listAll(): List<Tea> = teas.values.toList()
 
-    fun filterTeas(category: String?, caffeineLevel: String?, origin: String?): List<Tea> {
+    fun filterTeas(category: TeaCategory?, caffeineLevel: CaffeineLevel?, origin: String?): List<Tea> {
         return teas.values.filter { tea ->
-            (category == null || tea.category.equals(category, ignoreCase = true)) &&
-            (caffeineLevel == null || tea.caffeineLevel.equals(caffeineLevel, ignoreCase = true)) &&
+            (category == null || tea.category == category) &&
+            (caffeineLevel == null || tea.caffeineLevel == caffeineLevel) &&
             (origin == null || tea.origin.equals(origin, ignoreCase = true))
         }
     }
