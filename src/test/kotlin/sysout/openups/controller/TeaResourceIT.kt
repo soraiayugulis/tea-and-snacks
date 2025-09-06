@@ -20,7 +20,7 @@ class TeaResourceIT {
     @Test
     fun `deve adicionar e buscar tea`() {
         val teaJson = """
-            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"green","caffeineLevel":"MEDIUM"}
+            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
         val id = RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas").then().statusCode(201).extract().path<String>("id")
         RestAssured.given().get("/teas/$id").then().statusCode(200).body("name", equalTo("Sencha"))
@@ -29,10 +29,10 @@ class TeaResourceIT {
     @Test
     fun `deve filtrar teas por category, caffeineLevel e origin`() {
         val teaJson = """
-            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"green","caffeineLevel":"MEDIUM"}
+            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
         RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
-        RestAssured.given().queryParam("category", "green").queryParam("caffeineLevel", "MEDIUM").queryParam("origin", "japan")
+        RestAssured.given().queryParam("category", "GREEN").queryParam("caffeineLevel", "MEDIUM").queryParam("origin", "japan")
             .get("/teas")
             .then().statusCode(200).body("size()", greaterThanOrEqualTo(1)).body("find { it.name == 'Sencha' }.origin", equalTo("japan"))
     }
@@ -45,11 +45,11 @@ class TeaResourceIT {
     @Test
     fun `deve atualizar tea`() {
         val teaJson = """
-            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"green","caffeineLevel":"MEDIUM"}
+            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
         val id = RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas").then().extract().path<String>("id")
         val updateJson = """
-            {"name":"Sencha Atualizado","origin":"china","description":"Chá verde chinês","category":"green","caffeineLevel":"LOW"}
+            {"name":"Sencha Atualizado","origin":"china","description":"Chá verde chinês","category":"GREEN","caffeineLevel":"LOW"}
         """.trimIndent()
         RestAssured.given().contentType(ContentType.JSON).body(updateJson).put("/teas/$id").then().statusCode(200).body("name", equalTo("Sencha Atualizado"))
     }
@@ -57,7 +57,7 @@ class TeaResourceIT {
     @Test
     fun `deve deletar tea`() {
         val teaJson = """
-            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"green","caffeineLevel":"MEDIUM"}
+            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
         val id = RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas").then().extract().path<String>("id")
         RestAssured.given().delete("/teas/$id").then().statusCode(204)
@@ -66,6 +66,22 @@ class TeaResourceIT {
 
     @Test
     fun `deve retornar lista vazia para filtro sem resultado`() {
-        RestAssured.given().queryParam("category", "inexistente").get("/teas").then().statusCode(200).body("size()", equalTo(0))
+        // Certifique-se que o banco de dados está realmente limpo
+        RestAssured.given().delete("/teas")
+
+        // Adicione um chá que não corresponde ao filtro que usaremos
+        val teaJson = """
+            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
+        """.trimIndent()
+        RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
+
+        // Verifique se há chás após a adição
+        RestAssured.given().get("/teas")
+            .then().statusCode(200).body("size()", equalTo(1))
+
+        // Agora faça a consulta com um filtro que não corresponde a nenhum chá
+        RestAssured.given().queryParam("category", "FLORAL").get("/teas")
+            .then().statusCode(200).body("size()", equalTo(0))
     }
 }
+
