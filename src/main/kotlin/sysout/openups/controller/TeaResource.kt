@@ -11,6 +11,25 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
 import org.eclipse.microprofile.openapi.annotations.tags.Tag
+import sysout.openups.controller.common.Constants.Http.Status.BAD_REQUEST
+import sysout.openups.controller.common.Constants.Http.Status.CREATED
+import sysout.openups.controller.common.Constants.Http.Status.NOT_FOUND
+import sysout.openups.controller.common.Constants.Http.Status.NO_CONTENT
+import sysout.openups.controller.common.Constants.Http.Status.OK
+import sysout.openups.controller.common.Constants.List.TEA_FILTERED
+import sysout.openups.controller.common.Constants.Message.Error.Entity.TEAS_NOT_FOUND
+import sysout.openups.controller.common.Constants.Message.Error.Entity.TEA_INVALID_DATA
+import sysout.openups.controller.common.Constants.Message.Error.Entity.TEA_NOT_FOUND
+import sysout.openups.controller.common.Constants.Message.Success.Entity.TEAS_DELETED
+import sysout.openups.controller.common.Constants.Message.Success.Entity.TEA_CREATED
+import sysout.openups.controller.common.Constants.Message.Success.Entity.TEA_DELETED
+import sysout.openups.controller.common.Constants.Message.Success.Entity.TEA_FOUND
+import sysout.openups.controller.common.Constants.Message.Success.Entity.TEA_UPDATED
+import sysout.openups.controller.common.Constants.Operation.TEA_ADD
+import sysout.openups.controller.common.Constants.Operation.TEA_DELETE
+import sysout.openups.controller.common.Constants.Operation.TEA_DELETE_FILTER
+import sysout.openups.controller.common.Constants.Operation.TEA_FIND_BY_ID
+import sysout.openups.controller.common.Constants.Operation.TEA_UPDATE
 import sysout.openups.controller.dto.TeaDTO
 import sysout.openups.controller.service.TeaService
 import java.util.*
@@ -23,14 +42,20 @@ class TeaResource @Inject constructor(
     private val teaService: TeaService
 ) {
     @GET
-    @Operation(summary = "List teas with filtering",
-               description = "Returns a list of teas that can be filtered by category, caffeine level or origin")
+    @Operation(
+        summary = TEA_FILTERED,
+        description = "Returns a list of teas that can be filtered by category, caffeine level, and origin"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "200", description = "List of filtered teas",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = TeaDTO::class))]),
-            APIResponse(responseCode = "404", description = "No teas found matching the criteria")
+            APIResponse(
+                responseCode = OK,
+                description = TEA_FILTERED,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = TeaDTO::class)
+                )]
+            )
         ]
     )
     fun listFiltered(
@@ -42,49 +67,89 @@ class TeaResource @Inject constructor(
 
         @Parameter(description = "Country of origin")
         @QueryParam("origin") origin: String?
-    ) = teaService.filterTeas(category, caffeineLevel, origin)
+    ): List<TeaDTO> = teaService.filterTeas(category, caffeineLevel, origin)
 
     @GET
     @Path("/{id}")
-    @Operation(summary = "Find tea by ID", description = "Returns a specific tea by its ID")
+    @Operation(
+        summary = TEA_FIND_BY_ID,
+        description = "Returns a specific tea by its ID"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "200", description = "Tea found",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = TeaDTO::class))]),
-            APIResponse(responseCode = "404", description = "Tea not found")
+            APIResponse(
+                responseCode = OK,
+                description = TEA_FOUND,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = TeaDTO::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = NOT_FOUND,
+                description = TEA_NOT_FOUND
+            )
         ]
     )
-    fun getById(@Parameter(description = "Tea ID", required = true) @PathParam("id") id: UUID): Response {
+    fun getById(
+        @Parameter(description = "Tea ID", required = true) @PathParam("id") id: UUID
+    ): Response {
         val tea = teaService.findById(id) ?: return Response.status(Response.Status.NOT_FOUND).build()
         return Response.ok(tea).build()
     }
 
     @POST
-    @Operation(summary = "Add a new tea", description = "Creates a new tea in the system")
+    @Operation(
+        summary = TEA_ADD,
+        description = "Creates a new tea in the system"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "201", description = "Tea created successfully",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = TeaDTO::class))]),
-            APIResponse(responseCode = "400", description = "Invalid tea data provided")
+            APIResponse(
+                responseCode = CREATED,
+                description = TEA_CREATED,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = TeaDTO::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = BAD_REQUEST,
+                description = TEA_INVALID_DATA
+            )
         ]
     )
-    fun add(@Parameter(description = "Tea data to be added", required = true) dto: TeaDTO): Response {
+    fun add(
+        @Parameter(description = "Tea data to be added", required = true) dto: TeaDTO
+    ): Response {
         val created = teaService.add(dto)
         return Response.status(Response.Status.CREATED).entity(created).build()
     }
 
     @PUT
     @Path("/{id}")
-    @Operation(summary = "Update a tea", description = "Updates an existing tea's data")
+    @Operation(
+        summary = TEA_UPDATE,
+        description = "Updates an existing tea's data"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "200", description = "Tea updated successfully",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = TeaDTO::class))]),
-            APIResponse(responseCode = "400", description = "Invalid tea data provided"),
-            APIResponse(responseCode = "404", description = "Tea not found")
+            APIResponse(
+                responseCode = OK,
+                description = TEA_UPDATED,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = TeaDTO::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = NOT_FOUND,
+                description = TEA_NOT_FOUND
+            ),
+            APIResponse(
+                responseCode = BAD_REQUEST,
+                description = TEA_INVALID_DATA
+            )
         ]
     )
     fun update(
@@ -97,26 +162,45 @@ class TeaResource @Inject constructor(
 
     @DELETE
     @Path("/{id}")
-    @Operation(summary = "Delete a tea", description = "Removes a tea from the system")
+    @Operation(
+        summary = TEA_DELETE,
+        description = "Removes a tea from the system"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "204", description = "Tea deleted successfully"),
-            APIResponse(responseCode = "404", description = "Tea not found")
+            APIResponse(
+                responseCode = NO_CONTENT,
+                description = TEA_DELETED
+            ),
+            APIResponse(
+                responseCode = NOT_FOUND,
+                description = TEA_NOT_FOUND
+            )
         ]
     )
-    fun delete(@Parameter(description = "Tea ID", required = true) @PathParam("id") id: UUID): Response {
+    fun delete(
+        @Parameter(description = "Tea ID", required = true) @PathParam("id") id: UUID
+    ): Response {
         val deleted = teaService.delete(id)
         return if (deleted) Response.noContent().build() else Response.status(Response.Status.NOT_FOUND).build()
     }
 
     @DELETE
-    @Operation(summary = "Delete teas with filtering",
-               description = "Removes teas from the system, optionally filtered by category, caffeine level, or origin")
+    @Operation(
+        summary = TEA_DELETE_FILTER,
+        description = "Removes teas from the system, optionally filtered by category, caffeine level, or origin"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "200", description = "Teas deleted successfully, returns number of deleted items",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON)]),
-            APIResponse(responseCode = "204", description = "No teas found matching the criteria")
+            APIResponse(
+                responseCode = OK,
+                description = TEAS_DELETED,
+                content = [Content(mediaType = MediaType.APPLICATION_JSON)]
+            ),
+            APIResponse(
+                responseCode = NO_CONTENT,
+                description = TEAS_NOT_FOUND
+            )
         ]
     )
     fun deleteFiltered(

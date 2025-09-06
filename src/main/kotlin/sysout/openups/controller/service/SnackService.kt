@@ -3,6 +3,8 @@ package sysout.openups.controller.service
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
+import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
+import sysout.openups.controller.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
 import sysout.openups.controller.dto.SnackDTO
 import sysout.openups.controller.entity.Sauce
 import sysout.openups.controller.entity.Snack
@@ -23,23 +25,26 @@ class SnackService @Inject constructor(
     fun findById(id: UUID): SnackDTO? = snackRepository.findById(id)?.let { toDTO(it) }
 
     fun add(dto: SnackDTO): SnackDTO {
-        val snack = Snack()
-        snack.name = dto.name
-        snack.description = dto.description
-        snack.flavor = dto.flavor
-        snack.vegan = dto.vegan
-        snack.sides = dto.sides.mapNotNull { sauceRepository.findById(it) }.toMutableList()
+        val snack = Snack().apply {
+            name = dto.name
+            description = dto.description
+            flavor = dto.flavor
+            vegan = dto.vegan
+            sides = dto.sides.mapNotNull { sauceRepository.findById(it) }.toMutableList()
+        }
         val saved = snackRepository.save(snack)
         return toDTO(saved)
     }
 
     fun update(id: UUID, dto: SnackDTO): SnackDTO? {
         val entity = snackRepository.findById(id) ?: return null
-        entity.name = dto.name
-        entity.description = dto.description
-        entity.flavor = dto.flavor
-        entity.vegan = dto.vegan
-        entity.sides = dto.sides.mapNotNull { sauceRepository.findById(it) }.toMutableList()
+        entity.apply {
+            name = dto.name
+            description = dto.description
+            flavor = dto.flavor
+            vegan = dto.vegan
+            sides = dto.sides.mapNotNull { sauceRepository.findById(it) }.toMutableList()
+        }
         val result = snackRepository.update(id, entity)
         return result?.let { toDTO(it) }
     }
@@ -51,11 +56,33 @@ class SnackService @Inject constructor(
     }
 
     fun getSauces(id: UUID): List<Sauce> {
-        val snack = snackRepository.findById(id) ?: throw NotFoundException()
+        val snack = snackRepository.findById(id) ?: throw NotFoundException(SNACK_NOT_FOUND)
         return snack.sides
     }
 
-    private fun toDTO(snack: Snack): SnackDTO = SnackDTO(
+    fun addSauce(snackId: UUID, sauceId: UUID): SnackDTO {
+        val snack = snackRepository.findById(snackId) ?: throw NotFoundException(SNACK_NOT_FOUND)
+        val sauce = sauceRepository.findById(sauceId) ?: throw NotFoundException(SAUCE_NOT_FOUND)
+
+        if (!snack.sides.contains(sauce)) {
+            snack.sides.add(sauce)
+            snackRepository.update(snackId, snack)
+        }
+        return toDTO(snack)
+    }
+
+    fun removeSauce(snackId: UUID, sauceId: UUID): SnackDTO {
+        val snack = snackRepository.findById(snackId) ?: throw NotFoundException(SNACK_NOT_FOUND)
+        val sauce = sauceRepository.findById(sauceId) ?: throw NotFoundException(SAUCE_NOT_FOUND)
+
+        if (snack.sides.contains(sauce)) {
+            snack.sides.remove(sauce)
+            snackRepository.update(snackId, snack)
+        }
+        return toDTO(snack)
+    }
+
+    private fun toDTO(snack: Snack) = SnackDTO(
         id = snack.id,
         name = snack.name,
         description = snack.description,

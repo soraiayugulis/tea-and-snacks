@@ -11,6 +11,22 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
 import org.eclipse.microprofile.openapi.annotations.tags.Tag
+import sysout.openups.controller.common.Constants.Http.Status.BAD_REQUEST
+import sysout.openups.controller.common.Constants.Http.Status.CREATED
+import sysout.openups.controller.common.Constants.Http.Status.NOT_FOUND
+import sysout.openups.controller.common.Constants.Http.Status.NO_CONTENT
+import sysout.openups.controller.common.Constants.Http.Status.OK
+import sysout.openups.controller.common.Constants.List.SAUCE_FILTERED
+import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_INVALID_DATA
+import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
+import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_CREATED
+import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_DELETED
+import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_FOUND
+import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_UPDATED
+import sysout.openups.controller.common.Constants.Operation.SAUCE_ADD
+import sysout.openups.controller.common.Constants.Operation.SAUCE_DELETE
+import sysout.openups.controller.common.Constants.Operation.SAUCE_FIND_BY_ID
+import sysout.openups.controller.common.Constants.Operation.SAUCE_UPDATE
 import sysout.openups.controller.dto.SauceDTO
 import sysout.openups.controller.service.SauceService
 import java.util.*
@@ -23,14 +39,20 @@ class SauceResource @Inject constructor(
     private val sauceService: SauceService
 ) {
     @GET
-    @Operation(summary = "List sauces with filters",
-               description = "Returns a list of sauces that can be filtered by flavor")
+    @Operation(
+        summary = SAUCE_FILTERED,
+        description = "Returns a list of sauces that can be filtered by flavor"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "200", description = "List of filtered sauces",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = SauceDTO::class))]),
-            APIResponse(responseCode = "404", description = "No sauces found matching the criteria")
+            APIResponse(
+                responseCode = OK,
+                description = SAUCE_FILTERED,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = SauceDTO::class)
+                )]
+            )
         ]
     )
     fun listFiltered(
@@ -39,45 +61,85 @@ class SauceResource @Inject constructor(
 
     @GET
     @Path("/{id}")
-    @Operation(summary = "Find sauce by ID", description = "Returns a specific sauce by its ID")
+    @Operation(
+        summary = SAUCE_FIND_BY_ID,
+        description = "Returns a specific sauce by its ID"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "200", description = "Sauce found",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = SauceDTO::class))]),
-            APIResponse(responseCode = "404", description = "Sauce not found")
+            APIResponse(
+                responseCode = OK,
+                description = SAUCE_FOUND,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = SauceDTO::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = NOT_FOUND,
+                description = SAUCE_NOT_FOUND
+            )
         ]
     )
-    fun getById(@Parameter(description = "Sauce ID", required = true) @PathParam("id") id: UUID): Response {
+    fun getById(
+        @Parameter(description = "Sauce ID", required = true) @PathParam("id") id: UUID
+    ): Response {
         val sauce = sauceService.findById(id) ?: return Response.status(Response.Status.NOT_FOUND).build()
         return Response.ok(sauce).build()
     }
 
     @POST
-    @Operation(summary = "Add a new sauce", description = "Creates a new sauce in the system")
+    @Operation(
+        summary = SAUCE_ADD,
+        description = "Creates a new sauce in the system"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "201", description = "Sauce created successfully",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = SauceDTO::class))]),
-            APIResponse(responseCode = "400", description = "Invalid sauce data provided")
+            APIResponse(
+                responseCode = CREATED,
+                description = SAUCE_CREATED,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = SauceDTO::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = BAD_REQUEST,
+                description = SAUCE_INVALID_DATA
+            )
         ]
     )
-    fun add(@Parameter(description = "Sauce data to be added", required = true) dto: SauceDTO): Response {
+    fun add(
+        @Parameter(description = "Sauce data to be added", required = true) dto: SauceDTO
+    ): Response {
         val created = sauceService.add(dto)
         return Response.status(Response.Status.CREATED).entity(created).build()
     }
 
     @PUT
     @Path("/{id}")
-    @Operation(summary = "Update a sauce", description = "Updates an existing sauce's data")
+    @Operation(
+        summary = SAUCE_UPDATE,
+        description = "Updates an existing sauce's data"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "200", description = "Sauce updated successfully",
-                       content = [Content(mediaType = MediaType.APPLICATION_JSON,
-                                         schema = Schema(implementation = SauceDTO::class))]),
-            APIResponse(responseCode = "400", description = "Invalid sauce data provided"),
-            APIResponse(responseCode = "404", description = "Sauce not found")
+            APIResponse(
+                responseCode = OK,
+                description = SAUCE_UPDATED,
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = SauceDTO::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = NOT_FOUND,
+                description = SAUCE_NOT_FOUND
+            ),
+            APIResponse(
+                responseCode = BAD_REQUEST,
+                description = SAUCE_INVALID_DATA
+            )
         ]
     )
     fun update(
@@ -90,14 +152,25 @@ class SauceResource @Inject constructor(
 
     @DELETE
     @Path("/{id}")
-    @Operation(summary = "Delete a sauce", description = "Removes a sauce from the system")
+    @Operation(
+        summary = SAUCE_DELETE,
+        description = "Removes a sauce from the system"
+    )
     @APIResponses(
         value = [
-            APIResponse(responseCode = "204", description = "Sauce deleted successfully"),
-            APIResponse(responseCode = "404", description = "Sauce not found")
+            APIResponse(
+                responseCode = NO_CONTENT,
+                description = SAUCE_DELETED
+            ),
+            APIResponse(
+                responseCode = NOT_FOUND,
+                description = SAUCE_NOT_FOUND
+            )
         ]
     )
-    fun delete(@Parameter(description = "Sauce ID", required = true) @PathParam("id") id: UUID): Response {
+    fun delete(
+        @Parameter(description = "Sauce ID", required = true) @PathParam("id") id: UUID
+    ): Response {
         val deleted = sauceService.delete(id)
         return if (deleted) Response.noContent().build() else Response.status(Response.Status.NOT_FOUND).build()
     }
