@@ -23,7 +23,7 @@ class SnackServiceTest {
     lateinit var snackService: SnackService
 
     @Test
-    fun `deve listar todos os snacks`() {
+    fun `should list all snacks`() {
         val snacks = listOf(
             Snack().apply { id = UUID.randomUUID(); name = "Coxinha"; flavor = "frango"; vegan = false },
             Snack().apply { id = UUID.randomUUID(); name = "Kibe Vegano"; flavor = "soja"; vegan = true }
@@ -34,7 +34,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve filtrar snacks por vegan`() {
+    fun `should filter snacks by vegan`() {
         val snacks = listOf(
             Snack().apply { id = UUID.randomUUID(); name = "Kibe Vegano"; flavor = "soja"; vegan = true }
         )
@@ -45,7 +45,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve filtrar snacks por flavour`() {
+    fun `should filter snacks by flavour`() {
         val snacks = listOf(
             Snack().apply { id = UUID.randomUUID(); name = "Coxinha"; flavor = "frango"; vegan = false }
         )
@@ -56,7 +56,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve retornar snack por id`() {
+    fun `should return snack by id`() {
         val id = UUID.randomUUID()
         val snack = Snack().apply { this.id = id; name = "Coxinha"; flavor = "frango"; vegan = false }
         whenever(snackRepository.findById(id)).thenReturn(snack)
@@ -66,7 +66,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve retornar null se id nao existir`() {
+    fun `should return null if id does not exist`() {
         val id = UUID.randomUUID()
         whenever(snackRepository.findById(id)).thenReturn(null)
         val result = snackService.findById(id)
@@ -74,7 +74,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve adicionar snack`() {
+    fun `should add a snack`() {
         val dto = SnackDTO(null, "Coxinha", "frango", "salgado", false, emptyList())
         val entity = Snack().apply { id = UUID.randomUUID(); name = "Coxinha"; flavor = "frango"; vegan = false }
         whenever(snackRepository.save(any())).thenReturn(entity)
@@ -83,7 +83,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve atualizar snack existente`() {
+    fun `should update a existing snack`() {
         val id = UUID.randomUUID()
         val entity = Snack().apply { this.id = id; name = "Coxinha"; flavor = "frango"; vegan = false }
         val dto = SnackDTO(id, "Coxinha Atualizada", "soja", "salgado", true, emptyList())
@@ -94,7 +94,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve retornar null ao atualizar snack inexistente`() {
+    fun `should return null when update existing snack`() {
         val id = UUID.randomUUID()
         val dto = SnackDTO(id, "Coxinha Atualizada", "soja", "salgado",true, emptyList())
         whenever(snackRepository.findById(id)).thenReturn(null)
@@ -103,7 +103,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve deletar snack existente`() {
+    fun `should delete existing snack`() {
         val id = UUID.randomUUID()
         whenever(snackRepository.findById(id)).thenReturn(Snack().apply { this.id = id })
         doNothing().whenever(snackRepository).deleteById(id)
@@ -112,7 +112,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve retornar false ao deletar snack inexistente`() {
+    fun `should return false when delete non-existing snack`() {
         val id = UUID.randomUUID()
         whenever(snackRepository.findById(id)).thenReturn(null)
         val result = snackService.delete(id)
@@ -120,7 +120,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve retornar sauces do snack`() {
+    fun `should return sauces from a specific snack`() {
         val id = UUID.randomUUID()
         val sauce = Sauce(UUID.randomUUID(), "Barbecue", "barbecue")
         val snack = Snack().apply { this.id = id; sides = mutableListOf(sauce) }
@@ -131,7 +131,7 @@ class SnackServiceTest {
     }
 
     @Test
-    fun `deve lancar excecao ao buscar sauces de snack inexistente`() {
+    fun `should throw exception when getting sauces from a non-existing snack`() {
         val id = UUID.randomUUID()
         whenever(snackRepository.findById(id)).thenReturn(null)
         assertThrows(jakarta.ws.rs.NotFoundException::class.java) {

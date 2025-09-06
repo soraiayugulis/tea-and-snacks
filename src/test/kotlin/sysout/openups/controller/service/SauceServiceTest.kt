@@ -22,7 +22,7 @@ class SauceServiceTest {
     lateinit var sauceService: SauceService
 
     @Test
-    fun `deve listar todos os sauces`() {
+    fun `should list all sauces`() {
         val sauces = listOf(
             Sauce(UUID.randomUUID(), "Barbecue", "barbecue"),
             Sauce(UUID.randomUUID(), "Cheese", "cheese")
@@ -34,7 +34,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve filtrar sauces por flavour`() {
+    fun `should filter sauces by flavour`() {
         val sauces = listOf(
             Sauce(UUID.randomUUID(), "Barbecue", "barbecue"),
             Sauce(UUID.randomUUID(), "Cheese", "cheese")
@@ -46,7 +46,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve retornar sauce por id`() {
+    fun `should return sauce by id`() {
         val id = UUID.randomUUID()
         val sauce = Sauce(id, "Barbecue", "barbecue")
         whenever(sauceRepository.findById(id)).thenReturn(sauce)
@@ -56,7 +56,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve retornar null se id nao existir`() {
+    fun `should return null if sauce does not exist`() {
         val id = UUID.randomUUID()
         whenever(sauceRepository.findById(id)).thenReturn(null)
         val result = sauceService.findById(id)
@@ -64,7 +64,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve adicionar sauce`() {
+    fun `should add a sauce`() {
         val dto = SauceDTO(null, "Barbecue", "barbecue")
         val entity = Sauce(UUID.randomUUID(), "Barbecue", "barbecue")
         whenever(sauceRepository.save(any())).thenReturn(entity)
@@ -73,7 +73,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve atualizar sauce existente`() {
+    fun `should update existing sauce`() {
         val id = UUID.randomUUID()
         val entity = Sauce(id, "Barbecue", "barbecue")
         val dto = SauceDTO(id, "Barbecue Updated", "spicy")
@@ -84,7 +84,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve retornar null ao atualizar sauce inexistente`() {
+    fun `should return null when update does not happen`() {
         val id = UUID.randomUUID()
         val dto = SauceDTO(id, "Barbecue Updated", "spicy")
         whenever(sauceRepository.findById(id)).thenReturn(null)
@@ -93,7 +93,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve deletar sauce existente`() {
+    fun `should delete existing`() {
         val id = UUID.randomUUID()
         whenever(sauceRepository.findById(id)).thenReturn(Sauce(id, "Barbecue", "barbecue"))
         doNothing().whenever(sauceRepository).deleteById(id)
@@ -102,7 +102,7 @@ class SauceServiceTest {
     }
 
     @Test
-    fun `deve retornar false ao deletar sauce inexistente`() {
+    fun `should return false when delete non-existing sauce`() {
         val id = UUID.randomUUID()
         whenever(sauceRepository.findById(id)).thenReturn(null)
         val result = sauceService.delete(id)

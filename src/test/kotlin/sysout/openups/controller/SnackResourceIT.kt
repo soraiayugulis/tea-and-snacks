@@ -18,7 +18,7 @@ class SnackResourceIT {
     }
 
     @Test
-    fun `deve adicionar e buscar snack`() {
+    fun `should add and find snack`() {
         val snackJson = """
             {"name":"Coxinha","description":"Frango","flavor":"frango","vegan":false,"sides":[]}
         """.trimIndent()
@@ -37,7 +37,7 @@ class SnackResourceIT {
     }
 
     @Test
-    fun `deve filtrar snacks por vegan`() {
+    fun `should filter snacks by vegan`() {
         val snackJson = """
             {"name":"Kibe Vegano","description":"Soja","flavor":"soja","vegan":true,"sides":[]}
         """.trimIndent()
@@ -51,7 +51,7 @@ class SnackResourceIT {
     }
 
     @Test
-    fun `deve retornar 404 para id inexistente`() {
+    fun `should return 404 for non-existing id`() {
         RestAssured.given()
             .get("/snacks/00000000-0000-0000-0000-000000000000")
             .then()
@@ -59,7 +59,7 @@ class SnackResourceIT {
     }
 
     @Test
-    fun `deve atualizar snack`() {
+    fun `should update snack`() {
         val snackJson = """
             {"name":"Coxinha","description":"Frango","flavor":"frango","vegan":false,"sides":[]}
         """.trimIndent()
@@ -73,7 +73,7 @@ class SnackResourceIT {
     }
 
     @Test
-    fun `deve deletar snack`() {
+    fun `should delete snack`() {
         val snackJson = """
             {"name":"Coxinha","description":"Frango","flavor":"frango","vegan":false,"sides":[]}
         """.trimIndent()
@@ -83,7 +83,7 @@ class SnackResourceIT {
     }
 
     @Test
-    fun `deve filtrar snacks por flavour`() {
+    fun `should filter snacks by flavor`() {
         val snackJson = """
             {"name":"Coxinha","description":"Frango","flavor":"frango","vegan":false,"sides":[]}
         """.trimIndent()
@@ -97,7 +97,7 @@ class SnackResourceIT {
     }
 
     @Test
-    fun `deve retornar lista vazia para filtro sem resultado`() {
+    fun `should return empty list for filter with no results`() {
         RestAssured.given().queryParam("flavour", "inexistente")
             .get("/snacks")
             .then()

@@ -18,7 +18,7 @@ class SauceResourceIT {
     }
 
     @Test
-    fun `deve adicionar e buscar sauce`() {
+    fun `should add and find sauce`() {
         val sauceJson = """
             {"name":"Barbecue","flavour":"barbecue"}
         """.trimIndent()
@@ -37,7 +37,7 @@ class SauceResourceIT {
     }
 
     @Test
-    fun `deve filtrar sauces por flavour`() {
+    fun `should filter sauces by flavour`() {
         val sauceJson = """
             {"name":"Barbecue","flavour":"barbecue"}
         """.trimIndent()
@@ -46,12 +46,12 @@ class SauceResourceIT {
     }
 
     @Test
-    fun `deve retornar 404 para id inexistente`() {
+    fun `should return 404 for non-existing id`() {
         RestAssured.given().get("/sauces/00000000-0000-0000-0000-000000000000").then().statusCode(404)
     }
 
     @Test
-    fun `deve atualizar sauce`() {
+    fun `should update sauce`() {
         val sauceJson = """
             {"name":"Barbecue","flavour":"barbecue"}
         """.trimIndent()
@@ -63,7 +63,7 @@ class SauceResourceIT {
     }
 
     @Test
-    fun `deve deletar sauce`() {
+    fun `should delete sauce`() {
         val sauceJson = """
             {"name":"Barbecue","flavour":"barbecue"}
         """.trimIndent()
@@ -73,7 +73,7 @@ class SauceResourceIT {
     }
 
     @Test
-    fun `deve retornar lista vazia para filtro sem resultado`() {
+    fun `should return empty list for filter with no results`() {
         RestAssured.given().queryParam("flavour", "inexistente").get("/sauces").then().statusCode(200).body("size()", equalTo(0))
     }
 }

@@ -24,7 +24,7 @@ class TeaServiceTest {
     lateinit var teaService: TeaService
 
     @Test
-    fun `deve listar todos os teas`() {
+    fun `should list all teas`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM),
             Tea(UUID.randomUUID(), "Earl Grey", "england", "Chá preto", TeaCategory.BLACK, CaffeineLevel.HIGH)
@@ -36,7 +36,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve filtrar teas por category, caffeineLevel e origin`() {
+    fun `should filter teas by category, caffeineLevel and origin`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM),
             Tea(UUID.randomUUID(), "Earl Grey", "england", "Chá preto", TeaCategory.BLACK, CaffeineLevel.HIGH)
@@ -50,7 +50,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve retornar tea por id`() {
+    fun `should return tea by id`() {
         val id = UUID.randomUUID()
         val tea = Tea(id, "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         whenever(teaRepository.findById(id)).thenReturn(tea)
@@ -60,7 +60,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve retornar null se id nao existir`() {
+    fun `should return null if getting a non-existing tea`() {
         val id = UUID.randomUUID()
         whenever(teaRepository.findById(id)).thenReturn(null)
         val result = teaService.findById(id)
@@ -68,7 +68,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve adicionar tea`() {
+    fun `should add tea`() {
         val dto = TeaDTO(null, "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         val entity = Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         whenever(teaRepository.save(any())).thenReturn(entity)
@@ -77,7 +77,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve atualizar tea existente`() {
+    fun `should update existing tea`() {
         val id = UUID.randomUUID()
         val entity = Tea(id, "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         val dto = TeaDTO(id, "Sencha Atualizado", "china", "Chá verde chinês", TeaCategory.GREEN, CaffeineLevel.LOW)
@@ -88,7 +88,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve retornar null ao atualizar tea inexistente`() {
+    fun `should return null when update non-existing tea`() {
         val id = UUID.randomUUID()
         val dto = TeaDTO(id, "Sencha Atualizado", "china", "Chá verde chinês", TeaCategory.GREEN, CaffeineLevel.LOW)
         whenever(teaRepository.findById(id)).thenReturn(null)
@@ -97,7 +97,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve deletar tea existente`() {
+    fun `should delete existing tea`() {
         val id = UUID.randomUUID()
         val tea = Tea(id, "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         whenever(teaRepository.findById(id)).thenReturn(tea)
@@ -107,7 +107,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve retornar false ao deletar tea inexistente`() {
+    fun `should return false when delete non-existing tea`() {
         val id = UUID.randomUUID()
         whenever(teaRepository.findById(id)).thenReturn(null)
         val result = teaService.delete(id)
@@ -115,7 +115,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve deletar todos os teas quando nenhum filtro é fornecido`() {
+    fun `should delete all teas when no filter is set`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM),
             Tea(UUID.randomUUID(), "Earl Grey", "england", "Chá preto", TeaCategory.BLACK, CaffeineLevel.HIGH)
@@ -127,7 +127,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve deletar teas filtrados por categoria`() {
+    fun `should delete all teas filter by category`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM),
             Tea(UUID.randomUUID(), "Matcha", "japan", "Chá verde em pó", TeaCategory.GREEN, CaffeineLevel.HIGH)
@@ -144,14 +144,13 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve deletar teas filtrados por nível de cafeína`() {
+    fun `should delete all teas filter by caffeine`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM),
             Tea(UUID.randomUUID(), "Hojicha", "japan", "Chá verde tostado", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         )
         whenever(teaRepository.filterTeas(null, CaffeineLevel.MEDIUM, null)).thenReturn(teas)
 
-        // Setup mocks for each tea ID
         teas.forEach { tea ->
             tea.id?.let { doNothing().`when`(teaRepository).deleteById(it) }
         }
@@ -161,14 +160,13 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve deletar teas filtrados por origem`() {
+    fun `should delete all teas filter by origin`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM),
             Tea(UUID.randomUUID(), "Matcha", "japan", "Chá verde em pó", TeaCategory.GREEN, CaffeineLevel.HIGH)
         )
         whenever(teaRepository.filterTeas(null, null, "japan")).thenReturn(teas)
 
-        // Setup mocks for cada tea ID
         teas.forEach { tea ->
             tea.id?.let { doNothing().`when`(teaRepository).deleteById(it) }
         }
@@ -178,13 +176,12 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve deletar teas filtrados por múltiplos critérios`() {
+    fun `should delete all teas filter by multiple criteria`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         )
         whenever(teaRepository.filterTeas(TeaCategory.GREEN, CaffeineLevel.MEDIUM, "japan")).thenReturn(teas)
 
-        // Setup mocks for cada tea ID
         teas.forEach { tea ->
             tea.id?.let { doNothing().`when`(teaRepository).deleteById(it) }
         }
@@ -194,13 +191,12 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve converter strings para enums e deletar teas filtrados`() {
+    fun `should convert strings to enums and delete filtered teas`() {
         val teas = listOf(
             Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         )
         whenever(teaRepository.filterTeas(TeaCategory.GREEN, CaffeineLevel.MEDIUM, "japan")).thenReturn(teas)
 
-        // Setup mocks para cada tea ID
         teas.forEach { tea ->
             tea.id?.let { doNothing().`when`(teaRepository).deleteById(it) }
         }
@@ -210,7 +206,7 @@ class TeaServiceTest {
     }
 
     @Test
-    fun `deve lidar com valores de enum inválidos ao deletar teas filtrados`() {
+    fun `should deal with invalid enum values when delete filter teas`() {
         whenever(teaRepository.filterTeas(null, null, "japan")).thenReturn(emptyList())
         val result = teaService.deleteFiltered("INVALID_CATEGORY", "INVALID_LEVEL", "japan")
         assertEquals(0, result)

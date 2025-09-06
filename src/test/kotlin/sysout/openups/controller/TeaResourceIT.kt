@@ -18,7 +18,7 @@ class TeaResourceIT {
     }
 
     @Test
-    fun `deve adicionar e buscar tea`() {
+    fun `should add and find tea`() {
         val teaJson = """
             {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
@@ -27,7 +27,7 @@ class TeaResourceIT {
     }
 
     @Test
-    fun `deve filtrar teas por category, caffeineLevel e origin`() {
+    fun `should filter teas by category, caffeineLevel and origin`() {
         val teaJson = """
             {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
@@ -38,12 +38,12 @@ class TeaResourceIT {
     }
 
     @Test
-    fun `deve retornar 404 para id inexistente`() {
+    fun `should return 404 for non-existing id`() {
         RestAssured.given().get("/teas/00000000-0000-0000-0000-000000000000").then().statusCode(404)
     }
 
     @Test
-    fun `deve atualizar tea`() {
+    fun `should update tea`() {
         val teaJson = """
             {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
@@ -55,7 +55,7 @@ class TeaResourceIT {
     }
 
     @Test
-    fun `deve deletar tea`() {
+    fun `should delete tea`() {
         val teaJson = """
             {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
@@ -65,23 +65,18 @@ class TeaResourceIT {
     }
 
     @Test
-    fun `deve retornar lista vazia para filtro sem resultado`() {
-        // Certifique-se que o banco de dados está realmente limpo
+    fun `should return empty list for filter with no results`() {
         RestAssured.given().delete("/teas")
 
-        // Adicione um chá que não corresponde ao filtro que usaremos
         val teaJson = """
             {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
         RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
 
-        // Verifique se há chás após a adição
         RestAssured.given().get("/teas")
             .then().statusCode(200).body("size()", equalTo(1))
 
-        // Agora faça a consulta com um filtro que não corresponde a nenhum chá
         RestAssured.given().queryParam("category", "FLORAL").get("/teas")
             .then().statusCode(200).body("size()", equalTo(0))
     }
 }
-
