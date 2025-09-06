@@ -12,16 +12,37 @@ val quarkusPlatformGroupId: String by project
 val quarkusPlatformArtifactId: String by project
 val quarkusPlatformVersion: String by project
 
+val kotlinVersion = "2.0.0"
+val quarkusVersion = "3.13.1"
+val mockitoKotlinVersion = "5.2.1"
+val restAssuredVersion = "5.3.0"
+
 dependencies {
     implementation(enforcedPlatform("$quarkusPlatformGroupId:$quarkusPlatformArtifactId:$quarkusPlatformVersion"))
     implementation("io.quarkus:quarkus-kotlin")
     implementation("io.quarkus:quarkus-resteasy")
+    implementation("io.quarkus:quarkus-resteasy-jackson")
     implementation("io.quarkus:quarkus-arc")
     implementation("io.quarkus:quarkus-hibernate-orm-panache")
     implementation("io.quarkus:quarkus-hibernate-validator")
     implementation("io.quarkus:quarkus-hibernate-orm")
     implementation("io.quarkus:quarkus-jdbc-postgresql")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    // unit test
+    testImplementation("org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion")
+    testImplementation("io.quarkus:quarkus-junit5:$quarkusVersion")
+    testImplementation("io.quarkus:quarkus-junit5-mockito:$quarkusVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    // integ test
+    testImplementation("io.quarkus:quarkus-test-common:$quarkusVersion")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("io.rest-assured:rest-assured:$restAssuredVersion")
+    testImplementation("io.rest-assured:kotlin-extensions:$restAssuredVersion")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    systemProperty("org.testcontainers.docker.client.strategy", "dockerdesktop")
 }
