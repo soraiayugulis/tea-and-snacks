@@ -25,6 +25,7 @@ import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_F
 import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_UPDATED
 import sysout.openups.controller.common.Constants.Operation.SAUCE_ADD
 import sysout.openups.controller.common.Constants.Operation.SAUCE_DELETE
+import sysout.openups.controller.common.Constants.Operation.SAUCE_DELETE_ALL
 import sysout.openups.controller.common.Constants.Operation.SAUCE_FIND_BY_ID
 import sysout.openups.controller.common.Constants.Operation.SAUCE_UPDATE
 import sysout.openups.controller.dto.SauceDTO
@@ -173,5 +174,23 @@ class SauceResource @Inject constructor(
     ): Response {
         val deleted = sauceService.delete(id)
         return if (deleted) Response.noContent().build() else Response.status(Response.Status.NOT_FOUND).build()
+    }
+
+    @DELETE
+    @Operation(
+        summary = SAUCE_DELETE_ALL,
+        description = "Removes all sauces from the system"
+    )
+    @APIResponses(
+        value = [
+            APIResponse(
+                responseCode = NO_CONTENT,
+                description = SAUCE_DELETED
+            )
+        ]
+    )
+    fun deleteAll(): Response {
+        sauceService.deleteAll()
+        return Response.noContent().build()
     }
 }

@@ -188,7 +188,7 @@ class SnackServiceTest {
 
         whenever(snackRepository.findById(snackId)).thenReturn(snack)
         whenever(sauceRepository.findById(sauceId)).thenReturn(sauce)
-        whenever(snackRepository.save(any())).thenReturn(snack)
+        whenever(snackRepository.update(any(), any())).thenReturn(snack)
 
         val result = snackService.addSauce(snackId, sauceId)
 
@@ -196,7 +196,7 @@ class SnackServiceTest {
         assertTrue(snack.sides.contains(sauce))
         assertEquals(1, snack.sides.size)
         assertEquals(sauce, snack.sides[0])
-        verify(snackRepository).save(snack)
+        verify(snackRepository).update(any(), any())
     }
 
     @Test
@@ -215,13 +215,13 @@ class SnackServiceTest {
 
         whenever(snackRepository.findById(snackId)).thenReturn(snack)
         whenever(sauceRepository.findById(sauceId)).thenReturn(sauce)
-        whenever(snackRepository.save(any())).thenReturn(snack)
+        whenever(snackRepository.update(any(), any())).thenReturn(snack)
 
         val result = snackService.addSauce(snackId, sauceId)
 
         assertNotNull(result)
         assertEquals(1, snack.sides.size)
-        verify(snackRepository).save(snack)
+        verify(snackRepository).update(any(), any())
     }
 
     @Test
@@ -240,14 +240,14 @@ class SnackServiceTest {
 
         whenever(snackRepository.findById(snackId)).thenReturn(snack)
         whenever(sauceRepository.findById(sauceId)).thenReturn(sauce)
-        whenever(snackRepository.save(any())).thenReturn(snack)
+        whenever(snackRepository.update(any(), any())).thenReturn(snack)
 
         val result = snackService.removeSauce(snackId, sauceId)
 
         assertNotNull(result)
         assertFalse(snack.sides.contains(sauce))
         assertTrue(snack.sides.isEmpty())
-        verify(snackRepository).save(snack)
+        verify(snackRepository).update(any(), any())
     }
 
     @Test

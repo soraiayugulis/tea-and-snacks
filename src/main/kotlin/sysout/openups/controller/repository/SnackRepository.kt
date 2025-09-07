@@ -48,7 +48,11 @@ class SnackRepository {
     fun filterSnacks(vegan: Boolean?, flavour: String?): List<Snack> {
         return snacks.values.filter { snack ->
             (vegan == null || snack.vegan == vegan) &&
-            (flavour == null || snack.flavor.equals(flavour, ignoreCase = true))
+            (flavour == null || snack.flavor.contains(flavour, ignoreCase = true))
         }
+    }
+
+    fun deleteAll() {
+        snacks.clear()
     }
 }

@@ -31,6 +31,7 @@ import sysout.openups.controller.common.Constants.Operation.SAUCE_REMOVE_FROM_SN
 import sysout.openups.controller.common.Constants.Operation.SAUCE_TO_SNACK
 import sysout.openups.controller.common.Constants.Operation.SNACK_ADD
 import sysout.openups.controller.common.Constants.Operation.SNACK_DELETE
+import sysout.openups.controller.common.Constants.Operation.SNACK_DELETE_ALL
 import sysout.openups.controller.common.Constants.Operation.SNACK_FIND_BY_ID
 import sysout.openups.controller.common.Constants.Operation.SNACK_UPDATE
 import sysout.openups.controller.dto.SnackDTO
@@ -190,6 +191,24 @@ class SnackResource @Inject constructor(
     ): Response {
         val deleted = snackService.delete(id)
         return if (deleted) Response.noContent().build() else Response.status(Response.Status.NOT_FOUND).build()
+    }
+
+    @DELETE
+    @Operation(
+        summary = SNACK_DELETE_ALL,
+        description = "Removes all snacks from the system"
+    )
+    @APIResponses(
+        value = [
+            APIResponse(
+                responseCode = NO_CONTENT,
+                description = SNACK_DELETED
+            )
+        ]
+    )
+    fun deleteAll(): Response {
+        snackService.deleteAll()
+        return Response.noContent().build()
     }
 
     @GET

@@ -42,7 +42,11 @@ class SauceRepository {
 
     fun filterSauces(flavour: String?): List<Sauce> {
         return sauces.values.filter { sauce ->
-            flavour == null || sauce.flavour.equals(flavour, ignoreCase = true)
+            flavour == null || sauce.flavour.contains(flavour, ignoreCase = true)
         }
+    }
+
+    fun deleteAll() {
+        sauces.clear()
     }
 }

@@ -63,6 +63,10 @@ class SnackService @Inject constructor(
         return exists
     }
 
+    fun deleteAll() {
+        snackRepository.deleteAll()
+    }
+
     fun getSauces(id: UUID): List<Sauce> {
         val snack = snackRepository.findById(id) ?: throw NotFoundException(SNACK_NOT_FOUND)
         return snack.sides
@@ -74,8 +78,8 @@ class SnackService @Inject constructor(
 
         if (!snack.sides.contains(sauce)) {
             snack.sides.add(sauce)
-            snackRepository.update(snackId, snack)
         }
+        snackRepository.update(snackId, snack)
         return toDTO(snack)
     }
 

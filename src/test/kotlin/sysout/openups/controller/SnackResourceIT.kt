@@ -15,6 +15,7 @@ class SnackResourceIT {
     @BeforeEach
     fun cleanDb() {
         RestAssured.given().delete("/snacks")
+        RestAssured.given().delete("/sauces")
     }
 
     @Test

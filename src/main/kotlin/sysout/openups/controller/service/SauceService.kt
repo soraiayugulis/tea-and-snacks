@@ -38,6 +38,10 @@ class SauceService @Inject constructor(
         return exists
     }
 
+    fun deleteAll() {
+        sauceRepository.deleteAll()
+    }
+
     fun filterSauces(flavour: String?): List<SauceDTO> =
         sauceRepository.filterSauces(flavour).map { toDTO(it) }
 

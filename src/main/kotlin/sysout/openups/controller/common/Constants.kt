@@ -57,6 +57,7 @@ object Constants {
         const val SAUCE_FIND_BY_ID =  "Find sauce by ID"
         const val SAUCE_ADD = "Add a new sauce"
         const val SAUCE_DELETE = "Delete a sauce"
+        const val SAUCE_DELETE_ALL = "Delete all sauces"
         const val SAUCE_TO_SNACK = "Add sauce to a snack"
         const val SAUCE_REMOVE_FROM_SNACK = "Remove sauce from a snack"
         const val TEA_UPDATE = "Update a tea"
@@ -68,5 +69,6 @@ object Constants {
         const val SNACK_FIND_BY_ID =  "Find snack by ID"
         const val SNACK_ADD = "Add a new snack"
         const val SNACK_DELETE = "Delete a snack"
+        const val SNACK_DELETE_ALL = "Delete all snacks"
     }
 }
