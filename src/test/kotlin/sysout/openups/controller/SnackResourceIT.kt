@@ -107,7 +107,6 @@ class SnackResourceIT {
 
     @Test
     fun `should add sauce to snack successfully and verify sauce list`() {
-        // Create snack
         val snackId = RestAssured.given()
             .contentType(ContentType.JSON)
             .body("""
@@ -125,7 +124,6 @@ class SnackResourceIT {
             .extract()
             .path<String>("id")
 
-        // Create sauce
         val sauceId = RestAssured.given()
             .contentType(ContentType.JSON)
             .body("""
@@ -140,7 +138,6 @@ class SnackResourceIT {
             .extract()
             .path<String>("id")
 
-        // Add sauce to snack
         RestAssured.given()
             .contentType(ContentType.JSON)
             .post("/snacks/$snackId/sauces/$sauceId")
@@ -149,7 +146,6 @@ class SnackResourceIT {
             .body("sides.size()", equalTo(1))
             .body("sides[0]", equalTo(sauceId))
 
-        // Verify sauce is in the snack's sauce list
         RestAssured.given()
             .get("/snacks/$snackId/sauces")
             .then()
@@ -161,7 +157,6 @@ class SnackResourceIT {
 
     @Test
     fun `should not add duplicate sauce to snack`() {
-        // Create snack
         val snackId = RestAssured.given()
             .contentType(ContentType.JSON)
             .body("""
@@ -179,7 +174,6 @@ class SnackResourceIT {
             .extract()
             .path<String>("id")
 
-        // Create sauce
         val sauceId = RestAssured.given()
             .contentType(ContentType.JSON)
             .body("""
@@ -194,7 +188,6 @@ class SnackResourceIT {
             .extract()
             .path<String>("id")
 
-        // Add sauce first time
         RestAssured.given()
             .contentType(ContentType.JSON)
             .post("/snacks/$snackId/sauces/$sauceId")
@@ -202,7 +195,6 @@ class SnackResourceIT {
             .statusCode(200)
             .body("sides.size()", equalTo(1))
 
-        // Try to add same sauce again
         RestAssured.given()
             .contentType(ContentType.JSON)
             .post("/snacks/$snackId/sauces/$sauceId")
@@ -353,5 +345,197 @@ class SnackResourceIT {
             .then()
             .statusCode(404)
             .body("message", equalTo("Sauce not found"))
+    }
+
+    @Test
+    fun `should filter snacks by sauce flavour`() {
+        val sauceJson = """
+            {"name":"Cheese","description":"Cheese sauce","flavour":"american cheese"}
+        """.trimIndent()
+        val sauceId = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(sauceJson)
+            .post("/sauces")
+            .then()
+            .statusCode(201)
+            .extract().path<String>("id")
+
+        val snackJson = """
+            {"name":"Batata Frita","description":"Com queijo","flavor":"batata","vegan":false,"sides":["$sauceId"]}
+        """.trimIndent()
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(snackJson)
+            .post("/snacks")
+            .then()
+            .statusCode(201)
+
+        RestAssured.given()
+            .queryParam("sauce", "cheese")
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(1))
+            .body("[0].name", equalTo("Batata Frita"))
+    }
+
+    @Test
+    fun `should filter snacks case insensitive by sauce flavour`() {
+        val sauceJson = """
+            {"name":"BBQ","description":"Barbecue sauce","flavour":"Spicy BBQ"}
+        """.trimIndent()
+        val sauceId = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(sauceJson)
+            .post("/sauces")
+            .then()
+            .statusCode(201)
+            .extract().path<String>("id")
+
+        val snackJson = """
+            {"name":"Wings","description":"Chicken wings","flavor":"frango","vegan":false,"sides":["$sauceId"]}
+        """.trimIndent()
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(snackJson)
+            .post("/snacks")
+            .then()
+            .statusCode(201)
+
+        RestAssured.given()
+            .queryParam("sauce", "bbq")
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(1))
+            .body("[0].name", equalTo("Wings"))
+
+        RestAssured.given()
+            .queryParam("sauce", "BBQ")
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(1))
+            .body("[0].name", equalTo("Wings"))
+    }
+
+    @Test
+    fun `should filter snacks by partial sauce flavour match`() {
+        val sauce1Json = """
+            {"name":"Mayo Garlic","description":"Mayo with garlic","flavour":"garlic mayo"}
+        """.trimIndent()
+        val sauce1Id = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(sauce1Json)
+            .post("/sauces")
+            .then()
+            .statusCode(201)
+            .extract().path<String>("id")
+
+        val sauce2Json = """
+            {"name":"Mayo Herbs","description":"Mayo with herbs","flavour":"herb mayo"}
+        """.trimIndent()
+        val sauce2Id = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(sauce2Json)
+            .post("/sauces")
+            .then()
+            .statusCode(201)
+            .extract().path<String>("id")
+
+        val snack1Json = """
+            {"name":"Batata Mayo 1","description":"Com maionese de alho","flavor":"batata","vegan":false,"sides":["$sauce1Id"]}
+        """.trimIndent()
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(snack1Json)
+            .post("/snacks")
+            .then()
+            .statusCode(201)
+
+        val snack2Json = """
+            {"name":"Batata Mayo 2","description":"Com maionese de ervas","flavor":"batata","vegan":false,"sides":["$sauce2Id"]}
+        """.trimIndent()
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(snack2Json)
+            .post("/snacks")
+            .then()
+            .statusCode(201)
+
+        RestAssured.given()
+            .queryParam("sauce", "mayo")
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(2))
+    }
+
+    @Test
+    fun `should combine all filters - vegan, flavour and sauce`() {
+        val veganSauceJson = """
+            {"name":"Vegan Mayo","description":"Plant based mayo","flavour":"vegan mayo"}
+        """.trimIndent()
+        val veganSauceId = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(veganSauceJson)
+            .post("/sauces")
+            .then()
+            .statusCode(201)
+            .extract().path<String>("id")
+
+        val veganSnackJson = """
+            {"name":"Salada Vegana","description":"Com molho vegano","flavor":"verde","vegan":true,"sides":["$veganSauceId"]}
+        """.trimIndent()
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(veganSnackJson)
+            .post("/snacks")
+            .then()
+            .statusCode(201)
+
+        RestAssured.given()
+            .queryParam("vegan", true)
+            .queryParam("flavour", "verde")
+            .queryParam("sauce", "mayo")
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(1))
+            .body("[0].name", equalTo("Salada Vegana"))
+            .body("[0].vegan", equalTo(true))
+            .body("[0].flavor", equalTo("verde"))
+    }
+
+    @Test
+    fun `should return empty list when no snacks match filter combination`() {
+        val sauceJson = """
+            {"name":"Regular Mayo","description":"Regular mayo","flavour":"mayo"}
+        """.trimIndent()
+        val sauceId = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(sauceJson)
+            .post("/sauces")
+            .then()
+            .statusCode(201)
+            .extract().path<String>("id")
+
+        val snackJson = """
+            {"name":"Salada Normal","description":"Com maionese","flavor":"verde","vegan":false,"sides":["$sauceId"]}
+        """.trimIndent()
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .body(snackJson)
+            .post("/snacks")
+            .then()
+            .statusCode(201)
+
+        RestAssured.given()
+            .queryParam("vegan", true)
+            .queryParam("sauce", "mayo")
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(0))
     }
 }
