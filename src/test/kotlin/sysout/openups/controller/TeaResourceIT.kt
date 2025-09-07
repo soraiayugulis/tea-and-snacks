@@ -3,8 +3,7 @@ package sysout.openups.controller
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.greaterThanOrEqualTo
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -29,12 +28,19 @@ class TeaResourceIT {
     @Test
     fun `should filter teas by category, caffeineLevel and origin`() {
         val teaJson = """
-            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
+            {"name":"Chá de Camomila","origin":"brasil","description":"Chá calmante de camomila","category":"HERBAL","caffeineLevel":"NONE"}
         """.trimIndent()
         RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
-        RestAssured.given().queryParam("category", "GREEN").queryParam("caffeineLevel", "MEDIUM").queryParam("origin", "japan")
+        RestAssured.given()
+            .queryParam("category", "HERBAL")
+            .queryParam("caffeineLevel", "NONE")
+            .queryParam("origin", "brasil")
+            .queryParam("paginated", false)
             .get("/teas")
-            .then().statusCode(200).body("size()", greaterThanOrEqualTo(1)).body("find { it.name == 'Sencha' }.origin", equalTo("japan"))
+            .then()
+            .statusCode(200)
+            .body("size()", greaterThanOrEqualTo(1))
+            .body("find { it.name == 'Chá de Camomila' }.origin", equalTo("brasil"))
     }
 
     @Test
@@ -66,17 +72,120 @@ class TeaResourceIT {
 
     @Test
     fun `should return empty list for filter with no results`() {
-        RestAssured.given().delete("/teas")
-
         val teaJson = """
-            {"name":"Sencha","origin":"japan","description":"Chá verde","category":"GREEN","caffeineLevel":"MEDIUM"}
+            {"name":"Chá Mate","origin":"brasil","description":"Chá mate tostado","category":"BLACK","caffeineLevel":"HIGH"}
         """.trimIndent()
         RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
+        RestAssured.given()
+            .queryParam("category", "FLORAL")
+            .queryParam("paginated", false)
+            .get("/teas")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(0))
+    }
 
-        RestAssured.given().get("/teas")
-            .then().statusCode(200).body("size()", equalTo(1))
+    @Test
+    fun `should return paginated results with default values`() {
+        repeat(7) { index ->
+            val teaJson = """
+                {"name":"Tea $index","origin":"japan","description":"Green tea $index","category":"GREEN","caffeineLevel":"MEDIUM"}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
+        }
 
-        RestAssured.given().queryParam("category", "FLORAL").get("/teas")
-            .then().statusCode(200).body("size()", equalTo(0))
+        RestAssured.given()
+            .get("/teas")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(5)) // default page size is 5
+            .body("totalElements", equalTo(7))
+            .body("totalPages", equalTo(2))
+            .body("currentPage", equalTo(0))
+            .body("pageSize", equalTo(5))
+    }
+
+    @Test
+    fun `should return second page of results`() {
+        repeat(7) { index ->
+            val teaJson = """
+                {"name":"Tea $index","origin":"japan","description":"Green tea $index","category":"GREEN","caffeineLevel":"MEDIUM"}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
+        }
+
+        RestAssured.given()
+            .queryParam("page", 1)
+            .queryParam("size", 5)
+            .get("/teas")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(2)) // second page should have 2 items
+            .body("totalElements", equalTo(7))
+            .body("totalPages", equalTo(2))
+            .body("currentPage", equalTo(1))
+            .body("pageSize", equalTo(5))
+    }
+
+    @Test
+    fun `should validate page size not exceeding maximum`() {
+        // Add 12 teas
+        repeat(12) { index ->
+            val teaJson = """
+                {"name":"Tea $index","origin":"japan","description":"Green tea $index","category":"GREEN","caffeineLevel":"MEDIUM"}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
+        }
+
+        RestAssured.given()
+            .queryParam("size", 20) // try to request more than max (10)
+            .get("/teas")
+            .then()
+            .statusCode(200)
+            .body("pageSize", lessThanOrEqualTo(10)) // should be limited to max size
+    }
+
+    @Test
+    fun `should return error for invalid page parameters`() {
+        RestAssured.given()
+            .queryParam("page", -1)
+            .get("/teas")
+            .then()
+            .statusCode(400)
+
+        RestAssured.given()
+            .queryParam("size", 0)
+            .get("/teas")
+            .then()
+            .statusCode(400)
+    }
+
+    @Test
+    fun `should return paginated results with filters`() {
+        repeat(4) { index ->
+            val teaJson = """
+                {"name":"Green Tea $index","origin":"japan","description":"Green tea $index","category":"GREEN","caffeineLevel":"MEDIUM"}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
+        }
+
+        repeat(3) { index ->
+            val teaJson = """
+                {"name":"Black Tea $index","origin":"india","description":"Black tea $index","category":"BLACK","caffeineLevel":"HIGH"}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas")
+        }
+
+        RestAssured.given()
+            .queryParam("category", "GREEN")
+            .queryParam("size", 2)
+            .queryParam("page", 0)
+            .get("/teas")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(2))
+            .body("totalElements", equalTo(4))
+            .body("totalPages", equalTo(2))
+            .body("data.every { it.category == 'GREEN' }", equalTo(true))
     }
 }

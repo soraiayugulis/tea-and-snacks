@@ -3,8 +3,7 @@ package sysout.openups.controller
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.greaterThanOrEqualTo
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -43,7 +42,9 @@ class SnackResourceIT {
             {"name":"Kibe Vegano","description":"Soja","flavor":"soja","vegan":true,"sides":[]}
         """.trimIndent()
         RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
-        RestAssured.given().queryParam("vegan", true)
+        RestAssured.given()
+            .queryParam("vegan", true)
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
@@ -86,20 +87,28 @@ class SnackResourceIT {
     @Test
     fun `should filter snacks by flavor`() {
         val snackJson = """
-            {"name":"Coxinha","description":"Frango","flavor":"frango","vegan":false,"sides":[]}
+            {"name":"Snack","description":"Description","flavor":"sweet","vegan":true,"sides":[]}
         """.trimIndent()
         RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
-        RestAssured.given().queryParam("flavour", "frango")
+        RestAssured.given()
+            .queryParam("flavour", "sweet")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
             .body("size()", greaterThanOrEqualTo(1))
-            .body("find { it.flavor == 'frango' }.name", equalTo("Coxinha"))
+            .body("find { it.flavor == 'sweet' }.name", equalTo("Snack"))
     }
 
     @Test
     fun `should return empty list for filter with no results`() {
-        RestAssured.given().queryParam("flavour", "inexistente")
+        val snackJson = """
+            {"name":"Snack","description":"Description","flavor":"sweet","vegan":true,"sides":[]}
+        """.trimIndent()
+        RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
+        RestAssured.given()
+            .queryParam("flavour", "salty")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
@@ -373,6 +382,7 @@ class SnackResourceIT {
 
         RestAssured.given()
             .queryParam("sauce", "cheese")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
@@ -405,6 +415,7 @@ class SnackResourceIT {
 
         RestAssured.given()
             .queryParam("sauce", "bbq")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
@@ -413,6 +424,7 @@ class SnackResourceIT {
 
         RestAssured.given()
             .queryParam("sauce", "BBQ")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
@@ -466,6 +478,7 @@ class SnackResourceIT {
 
         RestAssured.given()
             .queryParam("sauce", "mayo")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
@@ -499,6 +512,7 @@ class SnackResourceIT {
             .queryParam("vegan", true)
             .queryParam("flavour", "verde")
             .queryParam("sauce", "mayo")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
@@ -511,7 +525,7 @@ class SnackResourceIT {
     @Test
     fun `should return empty list when no snacks match filter combination`() {
         val sauceJson = """
-            {"name":"Regular Mayo","description":"Regular mayo","flavour":"mayo"}
+            {"name":"Mostarda","description":"Mostarda tradicional","flavour":"mostarda"}
         """.trimIndent()
         val sauceId = RestAssured.given()
             .contentType(ContentType.JSON)
@@ -522,7 +536,7 @@ class SnackResourceIT {
             .extract().path<String>("id")
 
         val snackJson = """
-            {"name":"Salada Normal","description":"Com maionese","flavor":"verde","vegan":false,"sides":["$sauceId"]}
+            {"name":"Cachorro Quente","description":"Cachorro quente completo","flavor":"salsicha","vegan":false,"sides":["$sauceId"]}
         """.trimIndent()
         RestAssured.given()
             .contentType(ContentType.JSON)
@@ -533,10 +547,115 @@ class SnackResourceIT {
 
         RestAssured.given()
             .queryParam("vegan", true)
-            .queryParam("sauce", "mayo")
+            .queryParam("sauce", "mostarda")
+            .queryParam("paginated", false)
             .get("/snacks")
             .then()
             .statusCode(200)
             .body("size()", equalTo(0))
+    }
+
+    @Test
+    fun `should return paginated results with default values`() {
+        repeat(7) { index ->
+            val snackJson = """
+                {"name":"Snack $index","description":"Description $index","flavor":"flavor $index","vegan":${index % 2 == 0},"sides":[]}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
+        }
+
+        RestAssured.given()
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(5)) // Default page size is 5
+            .body("totalElements", equalTo(7))
+            .body("totalPages", equalTo(2))
+            .body("currentPage", equalTo(0))
+            .body("pageSize", equalTo(5))
+    }
+
+    @Test
+    fun `should return second page of results`() {
+        repeat(7) { index ->
+            val snackJson = """
+                {"name":"Snack $index","description":"Description $index","flavor":"flavor $index","vegan":${index % 2 == 0},"sides":[]}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
+        }
+
+        RestAssured.given()
+            .queryParam("page", 1)
+            .queryParam("size", 5)
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(2)) // second page should have 2 items
+            .body("totalElements", equalTo(7))
+            .body("totalPages", equalTo(2))
+            .body("currentPage", equalTo(1))
+            .body("pageSize", equalTo(5))
+    }
+
+    @Test
+    fun `should validate page size not exceeding maximum`() {
+        // Add 12 snacks
+        repeat(12) { index ->
+            val snackJson = """
+                {"name":"Snack $index","description":"Description $index","flavor":"flavor $index","vegan":${index % 2 == 0},"sides":[]}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
+        }
+
+        RestAssured.given()
+            .queryParam("size", 20)
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("pageSize", lessThanOrEqualTo(10)) // should be limited to max size
+    }
+
+    @Test
+    fun `should return error for invalid page parameters`() {
+        RestAssured.given()
+            .queryParam("page", -1)
+            .get("/snacks")
+            .then()
+            .statusCode(400)
+
+        RestAssured.given()
+            .queryParam("size", 0)
+            .get("/snacks")
+            .then()
+            .statusCode(400)
+    }
+
+    @Test
+    fun `should return paginated results with vegan filter`() {
+        repeat(4) { index ->
+            val snackJson = """
+                {"name":"Vegan Snack $index","description":"Vegan $index","flavor":"veggie $index","vegan":true,"sides":[]}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
+        }
+
+        repeat(3) { index ->
+            val snackJson = """
+                {"name":"Non-vegan Snack $index","description":"Non-vegan $index","flavor":"meat $index","vegan":false,"sides":[]}
+            """.trimIndent()
+            RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks")
+        }
+
+        RestAssured.given()
+            .queryParam("vegan", true)
+            .queryParam("size", 2)
+            .queryParam("page", 0)
+            .get("/snacks")
+            .then()
+            .statusCode(200)
+            .body("data.size()", equalTo(2))
+            .body("totalElements", equalTo(4))
+            .body("totalPages", equalTo(2))
+            .body("data.every { it.vegan == true }", equalTo(true))
     }
 }

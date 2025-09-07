@@ -6,10 +6,7 @@ import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
 import sysout.openups.controller.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
 import sysout.openups.controller.dto.SnackDTO
@@ -30,43 +27,112 @@ class SnackServiceTest {
     @Inject
     lateinit var snackService: SnackService
 
+    private fun createSnack(name: String, description: String, flavor: String, vegan: Boolean): Snack {
+        return Snack().apply {
+            this.id = UUID.randomUUID()
+            this.name = name
+            this.description = description
+            this.flavor = flavor
+            this.vegan = vegan
+            this.sides = mutableListOf()
+        }
+    }
+
     @Test
     fun `should list all snacks`() {
         val snacks = listOf(
-            Snack().apply { id = UUID.randomUUID(); name = "Coxinha"; flavor = "frango"; vegan = false },
-            Snack().apply { id = UUID.randomUUID(); name = "Kibe Vegano"; flavor = "soja"; vegan = true }
+            createSnack("Coxinha", "Massa crocante recheada com frango", "frango", false),
+            createSnack("Kibe Vegano", "Kibe de soja com hortelã", "soja", true)
         )
-        whenever(snackRepository.filterSnacks(null, null)).thenReturn(snacks)
+        whenever(snackRepository.listAll()).thenReturn(snacks)
 
         val result = snackService.listAll()
 
         assertEquals(2, result.size)
+        assertEquals("Coxinha", result[0].name)
+        assertEquals("Kibe Vegano", result[1].name)
     }
 
     @Test
     fun `should filter snacks by vegan`() {
         val snacks = listOf(
-            Snack().apply { id = UUID.randomUUID(); name = "Kibe Vegano"; flavor = "soja"; vegan = true }
+            createSnack("Kibe Vegano", "Kibe de soja com hortelã", "soja", true),
+            createSnack("Coxinha", "Massa crocante recheada com frango", "frango", false)
         )
-        whenever(snackRepository.filterSnacks(true, null)).thenReturn(snacks)
+        whenever(snackRepository.filterSnacks(eq(true), isNull())).thenReturn(listOf(snacks[0]))
 
-        val result = snackService.listAll(vegan = true)
+        val result = snackService.listFiltered(vegan = true)
 
         assertEquals(1, result.size)
+        assertEquals("Kibe Vegano", result[0].name)
         assertTrue(result[0].vegan)
     }
 
     @Test
     fun `should filter snacks by flavour`() {
         val snacks = listOf(
-            Snack().apply { id = UUID.randomUUID(); name = "Coxinha"; flavor = "frango"; vegan = false }
+            createSnack("Pastel de Queijo", "Massa crocante com queijo derretido", "queijo", false),
+            createSnack("Pastel de Carne", "Massa crocante com carne moída", "carne", false)
         )
-        whenever(snackRepository.filterSnacks(null, "frango")).thenReturn(snacks)
+        whenever(snackRepository.filterSnacks(isNull(), eq("queijo"))).thenReturn(listOf(snacks[0]))
 
-        val result = snackService.listAll(flavour = "frango")
+        val result = snackService.listFiltered(flavour = "queijo")
 
         assertEquals(1, result.size)
-        assertEquals("frango", result[0].flavor)
+        assertEquals("Pastel de Queijo", result[0].name)
+        assertEquals("queijo", result[0].flavor)
+    }
+
+    @Test
+    fun `should filter snacks by sauce flavour`() {
+        val sauce = Sauce(
+            name = "BBQ",
+            flavour = "smoky"
+        )
+        val snack = createSnack("Wings", "Description", "spicy", false)
+        snack.sides.add(sauce)
+
+        whenever(snackRepository.filterSnacks(isNull(), isNull())).thenReturn(listOf(snack))
+
+        val result = snackService.listFiltered(sauceFlavour = "smoky")
+
+        assertEquals(1, result.size)
+        assertEquals("Wings", result[0].name)
+    }
+
+    @Test
+    fun `should find snacks with partial sauce flavour match`() {
+        val sauce1 = Sauce(name = "BBQ", flavour = "smoky bbq")
+        val sauce2 = Sauce(name = "Sweet BBQ", flavour = "sweet bbq")
+
+        val snack1 = createSnack("Wings 1", "Description 1", "spicy", false)
+        snack1.sides.add(sauce1)
+        val snack2 = createSnack("Wings 2", "Description 2", "sweet", false)
+        snack2.sides.add(sauce2)
+
+        whenever(snackRepository.filterSnacks(isNull(), isNull())).thenReturn(listOf(snack1, snack2))
+
+        val result = snackService.listFiltered(sauceFlavour = "bbq")
+
+        assertEquals(2, result.size)
+        assertTrue(result.any { it.name == "Wings 1" })
+        assertTrue(result.any { it.name == "Wings 2" })
+    }
+
+    @Test
+    fun `should combine filters for vegan, flavour and sauce`() {
+        val sauce = Sauce(name = "Vegan Mayo", flavour = "vegan mayo")
+        val snack = createSnack("Salad", "Vegan salad", "fresh", true)
+        snack.sides.add(sauce)
+
+        whenever(snackRepository.filterSnacks(eq(true), eq("fresh"))).thenReturn(listOf(snack))
+
+        val result = snackService.listFiltered(true, "fresh", "mayo")
+
+        assertEquals(1, result.size)
+        assertEquals("Salad", result[0].name)
+        assertTrue(result[0].vegan)
+        assertEquals("fresh", result[0].flavor)
     }
 
     @Test
@@ -98,18 +164,19 @@ class SnackServiceTest {
 
     @Test
     fun `should add a snack`() {
-        val dto = SnackDTO(null, "Coxinha", "frango", "salgado", false, emptyList())
+        val dto = SnackDTO(null, "Pão de Queijo", "Pão de queijo mineiro quentinho", "queijo", false, emptyList())
         val entity = Snack().apply {
             id = UUID.randomUUID()
-            name = "Coxinha"
-            flavor = "frango"
+            name = "Pão de Queijo"
+            description = "Pão de queijo mineiro quentinho"
+            flavor = "queijo"
             vegan = false
         }
         whenever(snackRepository.save(any())).thenReturn(entity)
 
         val result = snackService.add(dto)
 
-        assertEquals("Coxinha", result.name)
+        assertEquals("Pão de Queijo", result.name)
         verify(snackRepository).save(any())
     }
 
@@ -118,11 +185,19 @@ class SnackServiceTest {
         val id = UUID.randomUUID()
         val entity = Snack().apply {
             this.id = id
-            name = "Coxinha"
-            flavor = "frango"
+            name = "Acarajé"
+            description = "Bolinho de feijão fradinho"
+            flavor = "camarão"
             vegan = false
         }
-        val dto = SnackDTO(id, "Coxinha Atualizada", "soja", "salgado", true, emptyList())
+        val dto = SnackDTO(
+            id,
+            "Acarajé Vegano",
+            "Bolinho de feijão fradinho sem camarão",
+            "feijão",
+            true,
+            emptyList()
+        )
         whenever(snackRepository.findById(id)).thenReturn(entity)
         whenever(snackRepository.update(id, entity)).thenReturn(entity)
 
@@ -147,9 +222,12 @@ class SnackServiceTest {
     @Test
     fun `should return sauces from a specific snack`() {
         val id = UUID.randomUUID()
-        val sauce = Sauce(UUID.randomUUID(), "Barbecue", "barbecue")
+        val sauce = Sauce(UUID.randomUUID(), "Maionese Caseira", "maionese com limão")
         val snack = Snack().apply {
             this.id = id
+            name = "Batata Frita"
+            description = "Batata frita crocante"
+            flavor = "batata"
             sides = mutableListOf(sauce)
         }
         whenever(snackRepository.findById(id)).thenReturn(snack)
@@ -157,7 +235,7 @@ class SnackServiceTest {
         val result = snackService.getSauces(id)
 
         assertEquals(1, result.size)
-        assertEquals("Barbecue", result[0].name)
+        assertEquals("Maionese Caseira", result[0].name)
     }
 
     @Test
@@ -177,12 +255,14 @@ class SnackServiceTest {
         val sauceId = UUID.randomUUID()
         val sauce = Sauce().apply {
             id = sauceId
-            name = "Mustard"
+            name = "Molho de Pimenta"
+            flavour = "pimenta malagueta"
         }
         val snack = Snack().apply {
             id = snackId
-            name = "Hot Dog"
-            flavor = "meat"
+            name = "Pastel de Carne"
+            description = "Pastel recheado com carne moída temperada"
+            flavor = "carne"
             sides = mutableListOf()
         }
 
@@ -205,11 +285,14 @@ class SnackServiceTest {
         val sauceId = UUID.randomUUID()
         val sauce = Sauce().apply {
             id = sauceId
-            name = "Mustard"
+            name = "Catupiry"
+            flavour = "queijo cremoso"
         }
         val snack = Snack().apply {
             id = snackId
-            name = "Hot Dog"
+            name = "Coxinha"
+            description = "Massa crocante recheada com frango"
+            flavor = "frango"
             sides = mutableListOf(sauce)
         }
 
@@ -230,11 +313,14 @@ class SnackServiceTest {
         val sauceId = UUID.randomUUID()
         val sauce = Sauce().apply {
             id = sauceId
-            name = "Mustard"
+            name = "Ketchup"
+            flavour = "tomate"
         }
         val snack = Snack().apply {
             id = snackId
-            name = "Hot Dog"
+            name = "Batata Frita"
+            description = "Batata frita crocante"
+            flavor = "batata"
             sides = mutableListOf(sauce)
         }
 
@@ -308,94 +394,5 @@ class SnackServiceTest {
             snackService.removeSauce(snackId, sauceId)
         }
         assertEquals(SAUCE_NOT_FOUND, exception.message)
-    }
-
-    @Test
-    fun `should filter snacks by sauce flavour`() {
-        val cheeseId = UUID.randomUUID()
-        val cheeseSauce = Sauce().apply {
-            id = cheeseId
-            name = "American Cheese"
-            flavour = "cheese"
-        }
-
-        val snacks = listOf(
-            Snack().apply {
-                id = UUID.randomUUID()
-                name = "Batata Frita"
-                flavor = "batata"
-                vegan = true
-                sides = mutableListOf(cheeseSauce)
-            }
-        )
-        whenever(snackRepository.filterSnacks(null, null)).thenReturn(snacks)
-
-        val result = snackService.listAll(sauceFlavour = "cheese")
-
-        assertEquals(1, result.size)
-        assertEquals("Batata Frita", result[0].name)
-    }
-
-    @Test
-    fun `should find snacks with partial sauce flavour match`() {
-        val cheese1 = Sauce().apply {
-            id = UUID.randomUUID()
-            name = "American Cheese"
-            flavour = "american cheese"
-        }
-        val cheese2 = Sauce().apply {
-            id = UUID.randomUUID()
-            name = "Mozzarella"
-            flavour = "mozzarella cheese"
-        }
-
-        val snacks = listOf(
-            Snack().apply {
-                id = UUID.randomUUID()
-                name = "Batata Frita 1"
-                flavor = "batata"
-                sides = mutableListOf(cheese1)
-            },
-            Snack().apply {
-                id = UUID.randomUUID()
-                name = "Batata Frita 2"
-                flavor = "batata"
-                sides = mutableListOf(cheese2)
-            }
-        )
-        whenever(snackRepository.filterSnacks(null, null)).thenReturn(snacks)
-
-        val result = snackService.listAll(sauceFlavour = "cheese")
-
-        assertEquals(2, result.size)
-        assertTrue(result.any { it.name == "Batata Frita 1" })
-        assertTrue(result.any { it.name == "Batata Frita 2" })
-    }
-
-    @Test
-    fun `should combine filters for vegan, flavour and sauce`() {
-        val cheeseSauce = Sauce().apply {
-            id = UUID.randomUUID()
-            name = "Vegan Cheese"
-            flavour = "vegan cheese"
-        }
-
-        val snacks = listOf(
-            Snack().apply {
-                id = UUID.randomUUID()
-                name = "Batata Vegana"
-                flavor = "batata"
-                vegan = true
-                sides = mutableListOf(cheeseSauce)
-            }
-        )
-        whenever(snackRepository.filterSnacks(true, "batata")).thenReturn(snacks)
-
-        val result = snackService.listAll(vegan = true, flavour = "batata", sauceFlavour = "cheese")
-
-        assertEquals(1, result.size)
-        assertTrue(result[0].vegan)
-        assertEquals("batata", result[0].flavor)
-        assertEquals("Batata Vegana", result[0].name)
     }
 }
