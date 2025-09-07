@@ -1,11 +1,11 @@
-package sysout.openups.controller.common
+package sysout.openups.common.pagination
 
 import jakarta.ws.rs.BadRequestException
-import sysout.openups.controller.common.Constants.Pagination.Error.PAGE_NUMBER_INVALID
-import sysout.openups.controller.common.Constants.Pagination.Error.PAGE_SIZE_INVALID
-import sysout.openups.controller.common.Constants.Pagination.Properties.DEFAULT_PAGE_NUMBER
-import sysout.openups.controller.common.Constants.Pagination.Properties.DEFAULT_PAGE_SIZE
-import sysout.openups.controller.common.Constants.Pagination.Properties.MAX_PAGE_SIZE
+import sysout.openups.common.Constants.Pagination.Error.PAGE_NUMBER_INVALID
+import sysout.openups.common.Constants.Pagination.Error.PAGE_SIZE_INVALID
+import sysout.openups.common.Constants.Pagination.Properties.DEFAULT_PAGE_NUMBER
+import sysout.openups.common.Constants.Pagination.Properties.DEFAULT_PAGE_SIZE
+import sysout.openups.common.Constants.Pagination.Properties.MAX_PAGE_SIZE
 
 object PaginationUtils {
     fun validateAndGetPageSize(size: Int?): Int {

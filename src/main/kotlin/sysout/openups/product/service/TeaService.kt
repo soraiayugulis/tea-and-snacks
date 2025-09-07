@@ -1,15 +1,15 @@
-package sysout.openups.controller.service
+package sysout.openups.product.service
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import sysout.openups.controller.common.PaginatedResponse
-import sysout.openups.controller.common.PaginationUtils
-import sysout.openups.controller.dto.TeaDTO
-import sysout.openups.controller.entity.CaffeineLevel
-import sysout.openups.controller.entity.Tea
-import sysout.openups.controller.entity.TeaCategory
-import sysout.openups.controller.repository.TeaRepository
-import sysout.openups.controller.util.EnumConverter
+import sysout.openups.common.pagination.PaginatedResponse
+import sysout.openups.common.pagination.PaginationUtils
+import sysout.openups.product.dto.TeaDTO
+import sysout.openups.product.entity.CaffeineLevel
+import sysout.openups.product.entity.Tea
+import sysout.openups.product.entity.TeaCategory
+import sysout.openups.product.repository.TeaRepository
+import sysout.openups.util.EnumConverter
 import java.util.*
 
 @ApplicationScoped

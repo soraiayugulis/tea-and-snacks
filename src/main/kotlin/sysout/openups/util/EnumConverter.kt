@@ -1,4 +1,4 @@
-package sysout.openups.controller.util
+package sysout.openups.util
 
 /**
  * Utility class for generic conversion of enums

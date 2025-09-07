@@ -1,4 +1,4 @@
-package sysout.openups.controller
+package sysout.openups.product
 
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
@@ -11,28 +11,28 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
 import org.eclipse.microprofile.openapi.annotations.tags.Tag
-import sysout.openups.controller.common.Constants.Http.Status.BAD_REQUEST
-import sysout.openups.controller.common.Constants.Http.Status.CREATED
-import sysout.openups.controller.common.Constants.Http.Status.NOT_FOUND
-import sysout.openups.controller.common.Constants.Http.Status.NO_CONTENT
-import sysout.openups.controller.common.Constants.Http.Status.OK
-import sysout.openups.controller.common.Constants.List.SAUCE_FILTERED
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_INVALID_DATA
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_CREATED
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_DELETED
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_FOUND
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_UPDATED
-import sysout.openups.controller.common.Constants.Operation.SAUCE_ADD
-import sysout.openups.controller.common.Constants.Operation.SAUCE_DELETE
-import sysout.openups.controller.common.Constants.Operation.SAUCE_DELETE_ALL
-import sysout.openups.controller.common.Constants.Operation.SAUCE_FIND_BY_ID
-import sysout.openups.controller.common.Constants.Operation.SAUCE_UPDATE
-import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_NUMBER_PARAM
-import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_SIZE_PARAM
-import sysout.openups.controller.common.PaginatedResponse
-import sysout.openups.controller.dto.SauceDTO
-import sysout.openups.controller.service.SauceService
+import sysout.openups.common.Constants.Http.Status.BAD_REQUEST
+import sysout.openups.common.Constants.Http.Status.CREATED
+import sysout.openups.common.Constants.Http.Status.NOT_FOUND
+import sysout.openups.common.Constants.Http.Status.NO_CONTENT
+import sysout.openups.common.Constants.Http.Status.OK
+import sysout.openups.common.Constants.List.SAUCE_FILTERED
+import sysout.openups.common.Constants.Message.Error.Entity.SAUCE_INVALID_DATA
+import sysout.openups.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
+import sysout.openups.common.Constants.Message.Success.Entity.SAUCE_CREATED
+import sysout.openups.common.Constants.Message.Success.Entity.SAUCE_DELETED
+import sysout.openups.common.Constants.Message.Success.Entity.SAUCE_FOUND
+import sysout.openups.common.Constants.Message.Success.Entity.SAUCE_UPDATED
+import sysout.openups.common.Constants.Operation.SAUCE_ADD
+import sysout.openups.common.Constants.Operation.SAUCE_DELETE
+import sysout.openups.common.Constants.Operation.SAUCE_DELETE_ALL
+import sysout.openups.common.Constants.Operation.SAUCE_FIND_BY_ID
+import sysout.openups.common.Constants.Operation.SAUCE_UPDATE
+import sysout.openups.common.Constants.Pagination.Params.PAGE_NUMBER_PARAM
+import sysout.openups.common.Constants.Pagination.Params.PAGE_SIZE_PARAM
+import sysout.openups.common.pagination.PaginatedResponse
+import sysout.openups.product.dto.SauceDTO
+import sysout.openups.product.service.SauceService
 import java.util.*
 
 @Path("/sauces")

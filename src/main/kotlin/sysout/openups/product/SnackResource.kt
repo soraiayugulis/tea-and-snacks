@@ -1,4 +1,4 @@
-package sysout.openups.controller
+package sysout.openups.product
 
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
@@ -11,36 +11,36 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
 import org.eclipse.microprofile.openapi.annotations.tags.Tag
-import sysout.openups.controller.common.Constants.Http.Status.BAD_REQUEST
-import sysout.openups.controller.common.Constants.Http.Status.CREATED
-import sysout.openups.controller.common.Constants.Http.Status.NOT_FOUND
-import sysout.openups.controller.common.Constants.Http.Status.NO_CONTENT
-import sysout.openups.controller.common.Constants.Http.Status.OK
-import sysout.openups.controller.common.Constants.List.SAUCE_BY_SNACK
-import sysout.openups.controller.common.Constants.List.SNACK_FILTERED
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_SNACK_NOT_FOUND
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SNACK_INVALID_DATA
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_ADDED_TO_SNACK
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SAUCE_REMOVED_FROM_SNACK
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SNACK_CREATED
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SNACK_DELETED
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SNACK_FOUND
-import sysout.openups.controller.common.Constants.Message.Success.Entity.SNACK_UPDATED
-import sysout.openups.controller.common.Constants.Operation.SAUCE_REMOVE_FROM_SNACK
-import sysout.openups.controller.common.Constants.Operation.SAUCE_TO_SNACK
-import sysout.openups.controller.common.Constants.Operation.SNACK_ADD
-import sysout.openups.controller.common.Constants.Operation.SNACK_DELETE
-import sysout.openups.controller.common.Constants.Operation.SNACK_DELETE_ALL
-import sysout.openups.controller.common.Constants.Operation.SNACK_FIND_BY_ID
-import sysout.openups.controller.common.Constants.Operation.SNACK_UPDATE
-import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_NUMBER_PARAM
-import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_SIZE_PARAM
-import sysout.openups.controller.common.PaginatedResponse
-import sysout.openups.controller.common.PaginationUtils
-import sysout.openups.controller.dto.SnackDTO
-import sysout.openups.controller.entity.Sauce
-import sysout.openups.controller.service.SnackService
+import sysout.openups.common.Constants.Http.Status.BAD_REQUEST
+import sysout.openups.common.Constants.Http.Status.CREATED
+import sysout.openups.common.Constants.Http.Status.NOT_FOUND
+import sysout.openups.common.Constants.Http.Status.NO_CONTENT
+import sysout.openups.common.Constants.Http.Status.OK
+import sysout.openups.common.Constants.List.SAUCE_BY_SNACK
+import sysout.openups.common.Constants.List.SNACK_FILTERED
+import sysout.openups.common.Constants.Message.Error.Entity.SAUCE_SNACK_NOT_FOUND
+import sysout.openups.common.Constants.Message.Error.Entity.SNACK_INVALID_DATA
+import sysout.openups.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
+import sysout.openups.common.Constants.Message.Success.Entity.SAUCE_ADDED_TO_SNACK
+import sysout.openups.common.Constants.Message.Success.Entity.SAUCE_REMOVED_FROM_SNACK
+import sysout.openups.common.Constants.Message.Success.Entity.SNACK_CREATED
+import sysout.openups.common.Constants.Message.Success.Entity.SNACK_DELETED
+import sysout.openups.common.Constants.Message.Success.Entity.SNACK_FOUND
+import sysout.openups.common.Constants.Message.Success.Entity.SNACK_UPDATED
+import sysout.openups.common.Constants.Operation.SAUCE_REMOVE_FROM_SNACK
+import sysout.openups.common.Constants.Operation.SAUCE_TO_SNACK
+import sysout.openups.common.Constants.Operation.SNACK_ADD
+import sysout.openups.common.Constants.Operation.SNACK_DELETE
+import sysout.openups.common.Constants.Operation.SNACK_DELETE_ALL
+import sysout.openups.common.Constants.Operation.SNACK_FIND_BY_ID
+import sysout.openups.common.Constants.Operation.SNACK_UPDATE
+import sysout.openups.common.Constants.Pagination.Params.PAGE_NUMBER_PARAM
+import sysout.openups.common.Constants.Pagination.Params.PAGE_SIZE_PARAM
+import sysout.openups.common.pagination.PaginatedResponse
+import sysout.openups.common.pagination.PaginationUtils
+import sysout.openups.product.dto.SauceDTO
+import sysout.openups.product.dto.SnackDTO
+import sysout.openups.product.service.SnackService
 import java.util.*
 
 @Path("/snacks")
@@ -243,7 +243,7 @@ class SnackResource @Inject constructor(
                 description = SAUCE_BY_SNACK,
                 content = [Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = Schema(implementation = Sauce::class)
+                    schema = Schema(implementation = SauceDTO::class)
                 )]
             ),
             APIResponse(

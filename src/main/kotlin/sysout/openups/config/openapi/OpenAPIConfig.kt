@@ -1,4 +1,4 @@
-package sysout.openups.config
+package sysout.openups.config.openapi
 
 import io.quarkus.arc.Unremovable
 import jakarta.enterprise.context.ApplicationScoped

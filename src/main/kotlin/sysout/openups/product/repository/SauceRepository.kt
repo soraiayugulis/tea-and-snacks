@@ -1,7 +1,7 @@
-package sysout.openups.controller.repository
+package sysout.openups.product.repository
 
 import jakarta.enterprise.context.ApplicationScoped
-import sysout.openups.controller.entity.Sauce
+import sysout.openups.product.entity.Sauce
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 

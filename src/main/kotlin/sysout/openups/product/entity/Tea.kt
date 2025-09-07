@@ -1,4 +1,4 @@
-package sysout.openups.controller.entity
+package sysout.openups.product.entity
 
 import jakarta.persistence.*
 import java.util.*

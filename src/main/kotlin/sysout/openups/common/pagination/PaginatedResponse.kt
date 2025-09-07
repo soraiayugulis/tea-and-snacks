@@ -1,4 +1,4 @@
-package sysout.openups.controller.common
+package sysout.openups.common.pagination
 
 data class PaginatedResponse<T>(
     val data: List<T>,

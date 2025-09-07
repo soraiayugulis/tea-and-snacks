@@ -1,4 +1,4 @@
-package sysout.openups.controller.common
+package sysout.openups.common
 
 /**
  * Centralized API messages and descriptions

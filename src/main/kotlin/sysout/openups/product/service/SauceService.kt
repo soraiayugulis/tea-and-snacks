@@ -1,12 +1,12 @@
-package sysout.openups.controller.service
+package sysout.openups.product.service
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import sysout.openups.controller.common.PaginatedResponse
-import sysout.openups.controller.common.PaginationUtils
-import sysout.openups.controller.dto.SauceDTO
-import sysout.openups.controller.entity.Sauce
-import sysout.openups.controller.repository.SauceRepository
+import sysout.openups.common.pagination.PaginatedResponse
+import sysout.openups.common.pagination.PaginationUtils
+import sysout.openups.product.dto.SauceDTO
+import sysout.openups.product.entity.Sauce
+import sysout.openups.product.repository.SauceRepository
 import java.util.*
 
 @ApplicationScoped

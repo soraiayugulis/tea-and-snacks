@@ -1,4 +1,4 @@
-package sysout.openups.controller.dto
+package sysout.openups.product.dto
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import java.util.*

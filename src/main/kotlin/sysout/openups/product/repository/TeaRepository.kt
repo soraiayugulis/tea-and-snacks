@@ -1,9 +1,9 @@
-package sysout.openups.controller.repository
+package sysout.openups.product.repository
 
 import jakarta.enterprise.context.ApplicationScoped
-import sysout.openups.controller.entity.CaffeineLevel
-import sysout.openups.controller.entity.Tea
-import sysout.openups.controller.entity.TeaCategory
+import sysout.openups.product.entity.CaffeineLevel
+import sysout.openups.product.entity.Tea
+import sysout.openups.product.entity.TeaCategory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 

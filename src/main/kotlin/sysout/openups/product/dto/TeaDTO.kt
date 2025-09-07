@@ -1,8 +1,8 @@
-package sysout.openups.controller.dto
+package sysout.openups.product.dto
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema
-import sysout.openups.controller.entity.CaffeineLevel
-import sysout.openups.controller.entity.TeaCategory
+import sysout.openups.product.entity.CaffeineLevel
+import sysout.openups.product.entity.TeaCategory
 import java.util.*
 
 @Schema(name = "Tea", description = "Tea representation")

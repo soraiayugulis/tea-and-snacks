@@ -1,17 +1,17 @@
-package sysout.openups.controller.service
+package sysout.openups.product.service
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
-import sysout.openups.controller.common.PaginatedResponse
-import sysout.openups.controller.common.PaginationUtils
-import sysout.openups.controller.dto.SnackDTO
-import sysout.openups.controller.entity.Sauce
-import sysout.openups.controller.entity.Snack
-import sysout.openups.controller.repository.SauceRepository
-import sysout.openups.controller.repository.SnackRepository
+import sysout.openups.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
+import sysout.openups.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
+import sysout.openups.common.pagination.PaginatedResponse
+import sysout.openups.common.pagination.PaginationUtils
+import sysout.openups.product.dto.SnackDTO
+import sysout.openups.product.entity.Sauce
+import sysout.openups.product.entity.Snack
+import sysout.openups.product.repository.SauceRepository
+import sysout.openups.product.repository.SnackRepository
 import java.util.*
 
 @ApplicationScoped
