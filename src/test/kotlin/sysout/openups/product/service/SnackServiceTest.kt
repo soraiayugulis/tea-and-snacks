@@ -1,4 +1,4 @@
-package sysout.openups.controller.service
+package sysout.openups.product.service
 
 import io.quarkus.test.InjectMock
 import io.quarkus.test.junit.QuarkusTest
@@ -7,13 +7,13 @@ import jakarta.ws.rs.NotFoundException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
-import sysout.openups.controller.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
-import sysout.openups.controller.dto.SnackDTO
-import sysout.openups.controller.entity.Sauce
-import sysout.openups.controller.entity.Snack
-import sysout.openups.controller.repository.SauceRepository
-import sysout.openups.controller.repository.SnackRepository
+import sysout.openups.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
+import sysout.openups.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
+import sysout.openups.product.dto.SnackDTO
+import sysout.openups.product.entity.Sauce
+import sysout.openups.product.entity.Snack
+import sysout.openups.product.repository.SauceRepository
+import sysout.openups.product.repository.SnackRepository
 import java.util.*
 
 @QuarkusTest

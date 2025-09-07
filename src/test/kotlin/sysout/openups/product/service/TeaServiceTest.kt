@@ -1,4 +1,4 @@
-package sysout.openups.controller.service
+package sysout.openups.product.service
 
 import io.quarkus.test.InjectMock
 import io.quarkus.test.junit.QuarkusTest
@@ -9,11 +9,11 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
-import sysout.openups.controller.dto.TeaDTO
-import sysout.openups.controller.entity.CaffeineLevel
-import sysout.openups.controller.entity.Tea
-import sysout.openups.controller.entity.TeaCategory
-import sysout.openups.controller.repository.TeaRepository
+import sysout.openups.product.dto.TeaDTO
+import sysout.openups.product.entity.CaffeineLevel
+import sysout.openups.product.entity.Tea
+import sysout.openups.product.entity.TeaCategory
+import sysout.openups.product.repository.TeaRepository
 import java.util.*
 
 @QuarkusTest

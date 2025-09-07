@@ -1,10 +1,10 @@
-package sysout.openups.controller.util
+package sysout.openups.util
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import sysout.openups.controller.entity.CaffeineLevel
-import sysout.openups.controller.entity.TeaCategory
+import sysout.openups.product.entity.CaffeineLevel
+import sysout.openups.product.entity.TeaCategory
 
 class EnumConverterTest {
 

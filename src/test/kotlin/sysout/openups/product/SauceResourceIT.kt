@@ -1,4 +1,4 @@
-package sysout.openups.controller
+package sysout.openups.product
 
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured
