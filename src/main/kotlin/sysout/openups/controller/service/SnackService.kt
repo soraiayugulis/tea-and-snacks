@@ -5,6 +5,8 @@ import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import sysout.openups.controller.common.Constants.Message.Error.Entity.SAUCE_NOT_FOUND
 import sysout.openups.controller.common.Constants.Message.Error.Entity.SNACK_NOT_FOUND
+import sysout.openups.controller.common.PaginatedResponse
+import sysout.openups.controller.common.PaginationUtils
 import sysout.openups.controller.dto.SnackDTO
 import sysout.openups.controller.entity.Sauce
 import sysout.openups.controller.entity.Snack
@@ -17,8 +19,19 @@ class SnackService @Inject constructor(
     private val snackRepository: SnackRepository,
     private val sauceRepository: SauceRepository
 ) {
-    fun listAll(vegan: Boolean? = null, flavour: String? = null, sauceFlavour: String? = null): List<SnackDTO> {
-        var snacks = snackRepository.filterSnacks(vegan, flavour)
+    fun listAll(
+        vegan: Boolean? = null,
+        flavour: String? = null,
+        sauceFlavour: String? = null,
+        page: Int = 0,
+        size: Int = 10
+    ): PaginatedResponse<SnackDTO> {
+        val validatedPage = PaginationUtils.validateAndGetPageNumber(page)
+        val validatedSize = PaginationUtils.validateAndGetPageSize(size)
+
+        val totalElements = snackRepository.countFilteredSnacks(vegan, flavour)
+        var snacks = snackRepository.filterSnacksPaginated(vegan, flavour, validatedPage, validatedSize)
+
         if (!sauceFlavour.isNullOrBlank()) {
             snacks = snacks.filter { snack ->
                 snack.sides.any { sauce ->
@@ -27,6 +40,27 @@ class SnackService @Inject constructor(
             }
         }
 
+        return PaginationUtils.createPaginatedResponse(
+            data = snacks.map { toDTO(it) },
+            totalElements = totalElements,
+            pageSize = validatedSize,
+            currentPage = validatedPage
+        )
+    }
+
+    fun listAll(): List<SnackDTO> {
+        return snackRepository.listAll().map { toDTO(it) }
+    }
+
+    fun listFiltered(vegan: Boolean? = null, flavour: String? = null, sauceFlavour: String? = null): List<SnackDTO> {
+        var snacks = snackRepository.filterSnacks(vegan, flavour)
+        if (!sauceFlavour.isNullOrBlank()) {
+            snacks = snacks.filter { snack ->
+                snack.sides.any { sauce ->
+                    sauce.flavour.contains(sauceFlavour, ignoreCase = true)
+                }
+            }
+        }
         return snacks.map { toDTO(it) }
     }
 

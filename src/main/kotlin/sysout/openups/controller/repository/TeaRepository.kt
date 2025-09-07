@@ -59,4 +59,24 @@ class TeaRepository {
             (origin == null || tea.origin.equals(origin, ignoreCase = true))
         }
     }
+
+    fun filterTeasPaginated(
+        category: TeaCategory?,
+        caffeineLevel: CaffeineLevel?,
+        origin: String?,
+        page: Int,
+        size: Int
+    ): List<Tea> {
+        return filterTeas(category, caffeineLevel, origin)
+            .drop(page * size)
+            .take(size)
+    }
+
+    fun countFilteredTeas(
+        category: TeaCategory?,
+        caffeineLevel: CaffeineLevel?,
+        origin: String?
+    ): Long {
+        return filterTeas(category, caffeineLevel, origin).size.toLong()
+    }
 }

@@ -2,6 +2,8 @@ package sysout.openups.controller.service
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import sysout.openups.controller.common.PaginatedResponse
+import sysout.openups.controller.common.PaginationUtils
 import sysout.openups.controller.dto.TeaDTO
 import sysout.openups.controller.entity.CaffeineLevel
 import sysout.openups.controller.entity.Tea
@@ -64,11 +66,39 @@ class TeaService @Inject constructor(
         return count
     }
 
-    fun filterTeas(categoryStr: String?, caffeineLevelStr: String?, origin: String?): List<TeaDTO> {
+    fun filterTeas(
+        categoryStr: String?,
+        caffeineLevelStr: String?,
+        origin: String?
+    ): List<TeaDTO> {
+        val category = EnumConverter.fromString<TeaCategory>(categoryStr)
+        val caffeineLevel = EnumConverter.fromString<CaffeineLevel>(caffeineLevelStr)
+        return teaRepository.filterTeas(category, caffeineLevel, origin).map { toDTO(it) }
+    }
+
+    fun filterTeas(
+        categoryStr: String?,
+        caffeineLevelStr: String?,
+        origin: String?,
+        page: Int = 0,
+        size: Int = 10
+    ): PaginatedResponse<TeaDTO> {
         val category = EnumConverter.fromString<TeaCategory>(categoryStr)
         val caffeineLevel = EnumConverter.fromString<CaffeineLevel>(caffeineLevelStr)
 
-        return teaRepository.filterTeas(category, caffeineLevel, origin).map { toDTO(it) }
+        val validatedPage = PaginationUtils.validateAndGetPageNumber(page)
+        val validatedSize = PaginationUtils.validateAndGetPageSize(size)
+
+        val totalElements = teaRepository.countFilteredTeas(category, caffeineLevel, origin)
+        val teas = teaRepository.filterTeasPaginated(category, caffeineLevel, origin, validatedPage, validatedSize)
+            .map { toDTO(it) }
+
+        return PaginationUtils.createPaginatedResponse(
+            data = teas,
+            totalElements = totalElements,
+            pageSize = validatedSize,
+            currentPage = validatedPage
+        )
     }
 
     fun deleteFiltered(categoryStr: String?, caffeineLevelStr: String?, origin: String?): Int {

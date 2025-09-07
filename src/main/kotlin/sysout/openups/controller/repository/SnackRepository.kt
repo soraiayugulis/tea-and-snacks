@@ -52,6 +52,24 @@ class SnackRepository {
         }
     }
 
+    fun filterSnacksPaginated(
+        vegan: Boolean?,
+        flavour: String?,
+        page: Int,
+        size: Int
+    ): List<Snack> {
+        return filterSnacks(vegan, flavour)
+            .drop(page * size)
+            .take(size)
+    }
+
+    fun countFilteredSnacks(
+        vegan: Boolean?,
+        flavour: String?
+    ): Long {
+        return filterSnacks(vegan, flavour).size.toLong()
+    }
+
     fun deleteAll() {
         snacks.clear()
     }

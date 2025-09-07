@@ -46,6 +46,20 @@ class SauceRepository {
         }
     }
 
+    fun filterSaucesPaginated(
+        flavour: String?,
+        page: Int,
+        size: Int
+    ): List<Sauce> {
+        return filterSauces(flavour)
+            .drop(page * size)
+            .take(size)
+    }
+
+    fun countFilteredSauces(flavour: String?): Long {
+        return filterSauces(flavour).size.toLong()
+    }
+
     fun deleteAll() {
         sauces.clear()
     }

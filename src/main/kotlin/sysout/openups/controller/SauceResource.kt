@@ -28,6 +28,9 @@ import sysout.openups.controller.common.Constants.Operation.SAUCE_DELETE
 import sysout.openups.controller.common.Constants.Operation.SAUCE_DELETE_ALL
 import sysout.openups.controller.common.Constants.Operation.SAUCE_FIND_BY_ID
 import sysout.openups.controller.common.Constants.Operation.SAUCE_UPDATE
+import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_NUMBER_PARAM
+import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_SIZE_PARAM
+import sysout.openups.controller.common.PaginatedResponse
 import sysout.openups.controller.dto.SauceDTO
 import sysout.openups.controller.service.SauceService
 import java.util.*
@@ -42,7 +45,7 @@ class SauceResource @Inject constructor(
     @GET
     @Operation(
         summary = SAUCE_FILTERED,
-        description = "Returns a list of sauces that can be filtered by flavor"
+        description = "Returns a paginated list of sauces that can be filtered by flavor"
     )
     @APIResponses(
         value = [
@@ -51,14 +54,32 @@ class SauceResource @Inject constructor(
                 description = SAUCE_FILTERED,
                 content = [Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = Schema(implementation = SauceDTO::class)
+                    schema = Schema(implementation = PaginatedResponse::class)
                 )]
             )
         ]
     )
-    fun listFiltered(
-        @Parameter(description = "Filter by flavor") @QueryParam("flavour") flavour: String?
-    ) = sauceService.filterSauces(flavour)
+    fun list(
+        @Parameter(description = "Filter by flavor")
+        @QueryParam("flavour") flavour: String?,
+
+        @Parameter(description = "Page size (default: 5)")
+        @QueryParam(PAGE_SIZE_PARAM) size: Int?,
+
+        @Parameter(description = "Page number (default: 0)")
+        @QueryParam(PAGE_NUMBER_PARAM) page: Int?,
+
+        @Parameter(description = "Use pagination (default: true)")
+        @QueryParam("paginated") paginated: Boolean?
+    ): Response {
+        return if (paginated ?: true) {
+            val result = sauceService.filterSauces(flavour, page ?: 0, size ?: 5)
+            Response.ok(result).build()
+        } else {
+            val result = sauceService.filterSauces(flavour)
+            Response.ok(result).build()
+        }
+    }
 
     @GET
     @Path("/{id}")

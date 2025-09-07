@@ -2,6 +2,8 @@ package sysout.openups.controller.service
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import sysout.openups.controller.common.PaginatedResponse
+import sysout.openups.controller.common.PaginationUtils
 import sysout.openups.controller.dto.SauceDTO
 import sysout.openups.controller.entity.Sauce
 import sysout.openups.controller.repository.SauceRepository
@@ -44,6 +46,26 @@ class SauceService @Inject constructor(
 
     fun filterSauces(flavour: String?): List<SauceDTO> =
         sauceRepository.filterSauces(flavour).map { toDTO(it) }
+
+    fun filterSauces(
+        flavour: String?,
+        page: Int,
+        size: Int
+    ): PaginatedResponse<SauceDTO> {
+        val validatedPage = PaginationUtils.validateAndGetPageNumber(page)
+        val validatedSize = PaginationUtils.validateAndGetPageSize(size)
+
+        val totalElements = sauceRepository.countFilteredSauces(flavour)
+        val sauces = sauceRepository.filterSaucesPaginated(flavour, validatedPage, validatedSize)
+            .map { toDTO(it) }
+
+        return PaginationUtils.createPaginatedResponse(
+            data = sauces,
+            totalElements = totalElements,
+            pageSize = validatedSize,
+            currentPage = validatedPage
+        )
+    }
 
     private fun toDTO(sauce: Sauce): SauceDTO = SauceDTO(
         id = sauce.id,

@@ -34,6 +34,10 @@ import sysout.openups.controller.common.Constants.Operation.SNACK_DELETE
 import sysout.openups.controller.common.Constants.Operation.SNACK_DELETE_ALL
 import sysout.openups.controller.common.Constants.Operation.SNACK_FIND_BY_ID
 import sysout.openups.controller.common.Constants.Operation.SNACK_UPDATE
+import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_NUMBER_PARAM
+import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_SIZE_PARAM
+import sysout.openups.controller.common.PaginatedResponse
+import sysout.openups.controller.common.PaginationUtils
 import sysout.openups.controller.dto.SnackDTO
 import sysout.openups.controller.entity.Sauce
 import sysout.openups.controller.service.SnackService
@@ -49,7 +53,7 @@ class SnackResource @Inject constructor(
     @GET
     @Operation(
         summary = SNACK_FILTERED,
-        description = "Returns a list of snacks that can be filtered by vegan option, flavor and sauce flavour"
+        description = "Returns a paginated list of snacks that can be filtered by vegan option, flavor and sauce flavour"
     )
     @APIResponses(
         value = [
@@ -58,7 +62,7 @@ class SnackResource @Inject constructor(
                 description = SNACK_FOUND,
                 content = [Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = Schema(implementation = Array<SnackDTO>::class)
+                    schema = Schema(implementation = PaginatedResponse::class)
                 )]
             )
         ]
@@ -71,10 +75,25 @@ class SnackResource @Inject constructor(
         @QueryParam("flavour") flavour: String?,
 
         @Parameter(description = "Filter by sauce flavour")
-        @QueryParam("sauce") sauceFlavour: String?
+        @QueryParam("sauce") sauceFlavour: String?,
+
+        @Parameter(description = "Page size (default: 5)")
+        @QueryParam(PAGE_SIZE_PARAM) size: Int?,
+
+        @Parameter(description = "Page number (default: 0)")
+        @QueryParam(PAGE_NUMBER_PARAM) page: Int?,
+
+        @Parameter(description = "Use pagination (default: true)")
+        @QueryParam("paginated") paginated: Boolean?
     ): Response {
-        val snacks = snackService.listAll(vegan, flavour, sauceFlavour)
-        return Response.ok(snacks).build()
+        val result = if (paginated ?: true) {
+            val validatedPage = PaginationUtils.validateAndGetPageNumber(page)
+            val validatedSize = PaginationUtils.validateAndGetPageSize(size)
+            snackService.listAll(vegan, flavour, sauceFlavour, validatedPage, validatedSize)
+        } else {
+            snackService.listFiltered(vegan, flavour, sauceFlavour)
+        }
+        return Response.ok(result).build()
     }
 
     @GET

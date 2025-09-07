@@ -30,6 +30,9 @@ import sysout.openups.controller.common.Constants.Operation.TEA_DELETE
 import sysout.openups.controller.common.Constants.Operation.TEA_DELETE_FILTER
 import sysout.openups.controller.common.Constants.Operation.TEA_FIND_BY_ID
 import sysout.openups.controller.common.Constants.Operation.TEA_UPDATE
+import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_NUMBER_PARAM
+import sysout.openups.controller.common.Constants.Pagination.Params.PAGE_SIZE_PARAM
+import sysout.openups.controller.common.PaginatedResponse
 import sysout.openups.controller.dto.TeaDTO
 import sysout.openups.controller.service.TeaService
 import java.util.*
@@ -44,7 +47,7 @@ class TeaResource @Inject constructor(
     @GET
     @Operation(
         summary = TEA_FILTERED,
-        description = "Returns a list of teas that can be filtered by category, caffeine level, and origin"
+        description = "Returns a paginated list of teas that can be filtered by category, caffeine level, and origin"
     )
     @APIResponses(
         value = [
@@ -53,12 +56,12 @@ class TeaResource @Inject constructor(
                 description = TEA_FILTERED,
                 content = [Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = Schema(implementation = TeaDTO::class)
+                    schema = Schema(implementation = PaginatedResponse::class)
                 )]
             )
         ]
     )
-    fun listFiltered(
+    fun list(
         @Parameter(description = "Tea category", schema = Schema(enumeration = ["BLACK", "GREEN", "HERBAL", "OOLONG", "WHITE", "FLORAL", "OTHER"]))
         @QueryParam("category") category: String?,
 
@@ -66,8 +69,24 @@ class TeaResource @Inject constructor(
         @QueryParam("caffeineLevel") caffeineLevel: String?,
 
         @Parameter(description = "Country of origin")
-        @QueryParam("origin") origin: String?
-    ): List<TeaDTO> = teaService.filterTeas(category, caffeineLevel, origin)
+        @QueryParam("origin") origin: String?,
+
+        @Parameter(description = "Page size (default: 5)")
+        @QueryParam(PAGE_SIZE_PARAM) size: Int?,
+
+        @Parameter(description = "Page number (default: 0)")
+        @QueryParam(PAGE_NUMBER_PARAM) page: Int?,
+
+        @Parameter(description = "Use pagination (default: true)")
+        @QueryParam("paginated") paginated: Boolean?
+    ): Response {
+        val result = if (paginated ?: true) {
+            teaService.filterTeas(category, caffeineLevel, origin, page ?: 0, size ?: 5)
+        } else {
+            teaService.filterTeas(category, caffeineLevel, origin)
+        }
+        return Response.ok(result).build()
+    }
 
     @GET
     @Path("/{id}")

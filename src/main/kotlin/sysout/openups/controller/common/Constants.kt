@@ -13,6 +13,7 @@ object Constants {
             const val NOT_FOUND = "404"
         }
     }
+
     object Message {
         object Error {
             object Entity {
@@ -26,6 +27,7 @@ object Constants {
                 const val SNACK_INVALID_DATA = "Invalid snack data provided"
             }
         }
+
         object Success {
             object Entity {
                 const val SAUCE_FOUND = "Sauce found"
@@ -46,27 +48,47 @@ object Constants {
             }
         }
     }
+
     object List {
         const val SAUCE_FILTERED = "List of filtered sauces"
         const val SAUCE_BY_SNACK = "List sauces for a snack"
         const val TEA_FILTERED = "List of filtered teas"
         const val SNACK_FILTERED = "List of filtered snacks"
     }
+
+    object Pagination {
+        object Properties {
+            const val DEFAULT_PAGE_SIZE = 5
+            const val MAX_PAGE_SIZE = 10
+            const val DEFAULT_PAGE_NUMBER = 0
+        }
+
+        object Params {
+            const val PAGE_SIZE_PARAM = "size"
+            const val PAGE_NUMBER_PARAM = "page"
+        }
+
+        object Error {
+            const val PAGE_SIZE_INVALID = "Page size must be greater than 0 and less than or equal to max page size"
+            const val PAGE_NUMBER_INVALID = "Page number must be 0 or greater"
+        }
+    }
+
     object Operation {
         const val SAUCE_UPDATE = "Update a sauce"
-        const val SAUCE_FIND_BY_ID =  "Find sauce by ID"
+        const val SAUCE_FIND_BY_ID = "Find sauce by ID"
         const val SAUCE_ADD = "Add a new sauce"
         const val SAUCE_DELETE = "Delete a sauce"
         const val SAUCE_DELETE_ALL = "Delete all sauces"
         const val SAUCE_TO_SNACK = "Add sauce to a snack"
         const val SAUCE_REMOVE_FROM_SNACK = "Remove sauce from a snack"
         const val TEA_UPDATE = "Update a tea"
-        const val TEA_FIND_BY_ID =  "Find tea by ID"
+        const val TEA_FIND_BY_ID = "Find tea by ID"
         const val TEA_ADD = "Add a new tea"
         const val TEA_DELETE = "Delete a tea"
         const val TEA_DELETE_FILTER = "Delete teas with filtering"
         const val SNACK_UPDATE = "Update a snack"
-        const val SNACK_FIND_BY_ID =  "Find snack by ID"
+        const val SNACK_FIND_BY_ID = "Find snack by ID"
         const val SNACK_ADD = "Add a new snack"
         const val SNACK_DELETE = "Delete a snack"
         const val SNACK_DELETE_ALL = "Delete all snacks"
