@@ -17,8 +17,16 @@ class SnackService @Inject constructor(
     private val snackRepository: SnackRepository,
     private val sauceRepository: SauceRepository
 ) {
-    fun listAll(vegan: Boolean? = null, flavour: String? = null): List<SnackDTO> {
-        val snacks = snackRepository.filterSnacks(vegan, flavour)
+    fun listAll(vegan: Boolean? = null, flavour: String? = null, sauceFlavour: String? = null): List<SnackDTO> {
+        var snacks = snackRepository.filterSnacks(vegan, flavour)
+        if (!sauceFlavour.isNullOrBlank()) {
+            snacks = snacks.filter { snack ->
+                snack.sides.any { sauce ->
+                    sauce.flavour.contains(sauceFlavour, ignoreCase = true)
+                }
+            }
+        }
+
         return snacks.map { toDTO(it) }
     }
 

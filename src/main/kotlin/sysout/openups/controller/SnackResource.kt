@@ -48,24 +48,33 @@ class SnackResource @Inject constructor(
     @GET
     @Operation(
         summary = SNACK_FILTERED,
-        description = "Returns a list of snacks that can be filtered by vegan option or flavor"
+        description = "Returns a list of snacks that can be filtered by vegan option, flavor and sauce flavour"
     )
     @APIResponses(
         value = [
             APIResponse(
                 responseCode = OK,
-                description = SNACK_FILTERED,
+                description = SNACK_FOUND,
                 content = [Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = Schema(implementation = SnackDTO::class)
+                    schema = Schema(implementation = Array<SnackDTO>::class)
                 )]
             )
         ]
     )
-    fun listAll(
-        @Parameter(description = "Filter by vegan snacks") @QueryParam("vegan") vegan: Boolean?,
-        @Parameter(description = "Filter by flavor") @QueryParam("flavour") flavour: String?
-    ): List<SnackDTO> = snackService.listAll(vegan, flavour)
+    fun list(
+        @Parameter(description = "Filter by vegan option")
+        @QueryParam("vegan") vegan: Boolean?,
+
+        @Parameter(description = "Filter by flavor")
+        @QueryParam("flavour") flavour: String?,
+
+        @Parameter(description = "Filter by sauce flavour")
+        @QueryParam("sauce") sauceFlavour: String?
+    ): Response {
+        val snacks = snackService.listAll(vegan, flavour, sauceFlavour)
+        return Response.ok(snacks).build()
+    }
 
     @GET
     @Path("/{id}")
