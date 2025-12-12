@@ -2,7 +2,7 @@
 
 API to manage maddox bar tea and snacks catalog.
 
-## Starting the Database
+## Starting db
 
 first thing first, start the PostgreSQL database:
 
@@ -49,9 +49,9 @@ curl -X GET http://localhost:8080/api/seed/data
 Response (if seeded):
 ```json
 {
-  "teas": [...],
-  "snacks": [...],
-  "sauces": [...],
+  "teas": [],
+  "snacks": [],
+  "sauces": [],
   "total": {
     "teas": 4,
     "snacks": 3,
@@ -294,6 +294,107 @@ curl -X DELETE http://localhost:8080/sauces
 
 ---
 
+### 🔑 Authentication
+
+#### Login
+```bash
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin"
+  }'
+```
+
+Response:
+```json
+{
+  "accessToken": "YOUR_JWT_TOKEN",
+  "expiresIn": 3600,
+  "refreshToken": "YOUR_REFRESH_TOKEN"
+}
+```
+
+#### Refresh Token
+```bash
+curl -X POST http://localhost:8080/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "YOUR_REFRESH_TOKEN"
+  }'
+```
+
+Response:
+```json
+{
+  "accessToken": "YOUR_NEW_JWT_TOKEN",
+  "expiresIn": 3600,
+  "refreshToken": "YOUR_NEW_REFRESH_TOKEN"
+}
+```
+
+#### Logout
+```bash
+curl -X POST http://localhost:8080/auth/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### 👤 Users
+
+#### Get Current User Info
+```bash
+curl -X GET http://localhost:8080/auth/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**⚠️ Requires ADMIN role**
+
+Response:
+```json
+{
+  "username": "admin",
+  "email": "admin@maddoxbar.com",
+  "roles": ["USER", "ADMIN"]
+}
+```
+
+#### List All Users
+```bash
+# List only active users (default)
+curl -X GET http://localhost:8080/auth/users \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# List all users (active and inactive)
+curl -X GET 'http://localhost:8080/auth/users?active=' \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# List only inactive users
+curl -X GET 'http://localhost:8080/auth/users?active=false' \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**⚠️ Requires ADMIN role**
+
+Response:
+```json
+[
+  {
+    "username": "admin",
+    "email": "admin@maddoxbar.com",
+    "roles": ["USER", "ADMIN"]
+  },
+  {
+    "username": "user",
+    "email": "user@maddoxbar.com",
+    "roles": ["USER"]
+  }
+]
+```
+
+---
+
 ## Packaging and running the application
 
 can be packaged using:
@@ -332,3 +433,55 @@ or run the native executable build in a container using:
 and, yes. it has swagger-ui too: `http://localhost:8080/swagger-ui`
 
 also, ill try to keep this updated. :D
+
+---
+
+## 🚀 Próximos Passos
+
+### **1. 🔧 Melhorias na Autenticação**
+- [ ] **Refresh Token**: Implementar tokens de renovação
+- [ ] **Email Verification**: Enviar email de confirmação após registro (maybe)
+- [ ] **Password Reset**: Endpoint para recuperação de senha via email
+- [ ] **Rate Limiting**: Limitar tentativas de login para prevenir ataques de força bruta
+- [ ] **Audit Log**: Registrar ações importantes (login, logout, alterações críticas)
+
+### **2. 🎯 Gestão de Permissões (RBAC)**
+- [ ] Adicionar `@RolesAllowed("ADMIN")` nos endpoints de DELETE (teas, snacks, sauces)
+- [ ] Criar role `MANAGER` para operações intermediárias
+- [ ] Endpoint para admin gerenciar roles de outros usuários
+- [ ] Endpoint para admin reativar contas desativadas
+- [ ] Endpoint para admin desativar usuários (soft delete)
+
+### **3. 📊 Relatórios e Analytics**
+- [ ] Endpoint para estatísticas (total de chás por categoria, snacks veganos, etc.)
+- [ ] Dashboard endpoint com métricas gerais
+- [ ] Endpoint de produtos mais populares/acessados
+
+### **4. 🔍 Melhorias de Busca**
+- [ ] **Full-text search** nos produtos (buscar por nome, descrição, ingredientes)
+- [ ] **Autocomplete** para busca rápida
+
+### **5. 🖼️ Upload de Imagens**
+- [ ] Adicionar campo `imageUrl` nas entidades
+- [ ] Endpoint para upload de imagens de produtos
+- [ ] Integração com storage (S3, MinIO, ou local)
+
+### **6. 🧪 Testes**
+- [ ] **Testes de Integração** para autenticação JWT
+- [ ] Testes para os novos endpoints de usuários
+- [ ] Testes de permissões (verificar 403 Forbidden)
+- [ ] Testes de segurança (tentativas de acesso não autorizado)
+
+### **7. 🐳 DevOps**
+- [ ] **CI/CD** com GitHub Actions
+- [ ] **Docker** multi-stage build
+- [ ] **Kubernetes** manifests para deploy
+- [ ] **Monitoring** com Prometheus/Grafana
+- [ ] **Logging** centralizado
+
+### **8. 📱 API Evolution**
+- [ ] Versionamento de API (v1, v2)
+- [ ] Editar constantes swagger novos endpoints
+
+---
+
