@@ -1,7 +1,7 @@
 package sysout.openups.product.entity
 
 import jakarta.persistence.*
-import java.util.*
+import java.util.UUID
 
 @Entity
 @Table(name = "tea")
@@ -12,6 +12,10 @@ open class Tea(
     var name: String = "",
     var origin: String = "",
     var description: String = "",
+
+    @ElementCollection
+    @CollectionTable(name = "tea_ingredient", joinColumns = [JoinColumn(name = "tea_id")])
+    var ingredients: List<Ingredient> = emptyList(),
 
     @Enumerated(EnumType.STRING)
     var category: TeaCategory = TeaCategory.OTHER,

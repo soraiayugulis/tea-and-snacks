@@ -4,10 +4,13 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import sysout.openups.common.pagination.PaginatedResponse
 import sysout.openups.common.pagination.PaginationUtils
+import sysout.openups.product.dto.IngredientDTO
 import sysout.openups.product.dto.TeaDTO
 import sysout.openups.product.entity.CaffeineLevel
+import sysout.openups.product.entity.Ingredient
 import sysout.openups.product.entity.Tea
 import sysout.openups.product.entity.TeaCategory
+import sysout.openups.product.entity.UnitOfMeasure
 import sysout.openups.product.repository.TeaRepository
 import sysout.openups.util.EnumConverter
 import java.util.*
@@ -26,7 +29,8 @@ class TeaService @Inject constructor(
             origin = dto.origin,
             description = dto.description,
             category = dto.category,
-            caffeineLevel = dto.caffeineLevel
+            caffeineLevel = dto.caffeineLevel,
+            ingredients = dto.ingredients.map { ingredientDTOToEntity(it) }
         )
         val saved = teaRepository.save(tea)
         return toDTO(saved)
@@ -39,6 +43,7 @@ class TeaService @Inject constructor(
         entity.description = dto.description
         entity.category = dto.category
         entity.caffeineLevel = dto.caffeineLevel
+        entity.ingredients = dto.ingredients.map { ingredientDTOToEntity(it) }
         val result = teaRepository.update(id, entity)
         return result?.let { toDTO(it) }
     }
@@ -114,6 +119,21 @@ class TeaService @Inject constructor(
         origin = tea.origin,
         description = tea.description,
         category = tea.category,
-        caffeineLevel = tea.caffeineLevel
+        caffeineLevel = tea.caffeineLevel,
+        ingredients = tea.ingredients.map { ingredientEntityToDTO(it) }
+    )
+
+    private fun ingredientDTOToEntity(dto: IngredientDTO): Ingredient = Ingredient(
+        id = dto.id,
+        name = dto.name,
+        quantity = dto.quantity,
+        unitOfMeasure = UnitOfMeasure.valueOf(dto.unitOfMeasure)
+    )
+
+    private fun ingredientEntityToDTO(entity: Ingredient): IngredientDTO = IngredientDTO(
+        id = entity.id,
+        name = entity.name,
+        quantity = entity.quantity,
+        unitOfMeasure = entity.unitOfMeasure.name
     )
 }

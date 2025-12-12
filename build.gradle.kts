@@ -16,6 +16,7 @@ val kotlinVersion = "2.0.0"
 val quarkusVersion = "3.13.1"
 val mockitoKotlinVersion = "5.2.1"
 val restAssuredVersion = "5.3.0"
+val hamcrestVersion = "2.2"
 
 dependencies {
     implementation(enforcedPlatform("$quarkusPlatformGroupId:$quarkusPlatformArtifactId:$quarkusPlatformVersion"))
@@ -41,6 +42,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     testImplementation("io.rest-assured:rest-assured:$restAssuredVersion")
     testImplementation("io.rest-assured:kotlin-extensions:$restAssuredVersion")
+    testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
 }
 
 tasks.test {

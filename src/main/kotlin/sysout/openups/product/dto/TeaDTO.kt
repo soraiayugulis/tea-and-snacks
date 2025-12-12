@@ -19,6 +19,9 @@ data class TeaDTO(
     @field:Schema(description = "Tea description", required = true, example = "A black tea flavored with bergamot")
     var description: String = "",
 
+    @field:Schema(description = "List of ingredients", required = false)
+    var ingredients: List<IngredientDTO> = emptyList(),
+
     @field:Schema(description = "Tea category", required = true, example = "BLACK", enumeration = ["BLACK", "GREEN", "HERBAL", "OOLONG", "WHITE", "FLORAL", "OTHER"])
     var category: TeaCategory = TeaCategory.OTHER,
 
