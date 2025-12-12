@@ -8,7 +8,8 @@ import jakarta.transaction.Transactional
 class DatabaseSeeder @Inject constructor(
     private val teaSeeder: TeaSeeder,
     private val snackSeeder: SnackSeeder,
-    private val sauceSeeder: SauceSeeder
+    private val sauceSeeder: SauceSeeder,
+    private val userSeeder: UserSeeder
 ) {
     private var isSeeded = false
 
@@ -16,6 +17,7 @@ class DatabaseSeeder @Inject constructor(
     fun seed() {
         if (isSeeded) return
 
+        userSeeder.seed()
         teaSeeder.seed()
         sauceSeeder.seed()
         snackSeeder.seed()
@@ -30,6 +32,7 @@ class DatabaseSeeder @Inject constructor(
         snackSeeder.reset()
         sauceSeeder.reset()
         teaSeeder.reset()
+        userSeeder.reset()
 
         isSeeded = false
     }
