@@ -9,10 +9,13 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
+import sysout.openups.product.dto.IngredientDTO
 import sysout.openups.product.dto.TeaDTO
 import sysout.openups.product.entity.CaffeineLevel
+import sysout.openups.product.entity.Ingredient
 import sysout.openups.product.entity.Tea
 import sysout.openups.product.entity.TeaCategory
+import sysout.openups.product.entity.UnitOfMeasure
 import sysout.openups.product.repository.TeaRepository
 import java.util.*
 
@@ -26,9 +29,18 @@ class TeaServiceTest {
 
     @Test
     fun `should list all teas`() {
+        val ingredientsCamomila = listOf<Ingredient>(
+            Ingredient(UUID.randomUUID(), "Camomila", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
+        val ingredientsMate = listOf<Ingredient>(
+            Ingredient(UUID.randomUUID(), "Chá Mate", 15.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Limão", 25.0, UnitOfMeasure.ML),
+            Ingredient(UUID.randomUUID(), "Água", 250.0, UnitOfMeasure.ML)
+        )
         val teas = listOf(
-            Tea(UUID.randomUUID(), "Chá de Camomila", "brasil", "Chá calmante de camomila", TeaCategory.HERBAL, CaffeineLevel.NONE),
-            Tea(UUID.randomUUID(), "Chá Mate", "brasil", "Chá mate tostado", TeaCategory.BLACK, CaffeineLevel.HIGH)
+            Tea(UUID.randomUUID(), "Chá de Camomila", "brasil", "Chá calmante de camomila", ingredientsCamomila, TeaCategory.HERBAL, CaffeineLevel.NONE),
+            Tea(UUID.randomUUID(), "Chá Mate", "brasil", "Chá mate tostado", ingredientsMate, TeaCategory.BLACK, CaffeineLevel.HIGH)
         )
         whenever(teaRepository.listAll()).thenReturn(teas)
         val result = teaService.listAll()
@@ -42,6 +54,10 @@ class TeaServiceTest {
             name = "Capim Limão"
             origin = "brasil"
             description = "Chá natural de capim limão"
+            ingredients = listOf(
+                Ingredient(UUID.randomUUID(), "Capim Limão", 10.0, UnitOfMeasure.GRAMS),
+                Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+            )
             category = TeaCategory.HERBAL
             caffeineLevel = CaffeineLevel.NONE
         }
@@ -53,6 +69,7 @@ class TeaServiceTest {
         assertEquals(1, result.size)
         assertEquals("Capim Limão", result[0].name)
         assertEquals("brasil", result[0].origin)
+        assertEquals("Água", result[0].ingredients[1].name)
         assertEquals(TeaCategory.HERBAL, result[0].category)
         assertEquals(CaffeineLevel.NONE, result[0].caffeineLevel)
     }
@@ -60,7 +77,11 @@ class TeaServiceTest {
     @Test
     fun `should return tea by id`() {
         val id = UUID.randomUUID()
-        val tea = Tea(id, "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
+        val ingredients = listOf(
+            Ingredient(UUID.randomUUID(), "Chá Verde", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
+        val tea = Tea(id, "Sencha", "japan", "Chá verde", ingredients, TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         whenever(teaRepository.findById(id)).thenReturn(tea)
         val result = teaService.findById(id)
         assertNotNull(result)
@@ -77,8 +98,16 @@ class TeaServiceTest {
 
     @Test
     fun `should add tea`() {
-        val dto = TeaDTO(null, "Chá de Hortelã", "brasil", "Chá refrescante de hortelã", TeaCategory.HERBAL, CaffeineLevel.NONE)
-        val entity = Tea(UUID.randomUUID(), "Chá de Hortelã", "brasil", "Chá refrescante de hortelã", TeaCategory.HERBAL, CaffeineLevel.NONE)
+        val ingredientsDto = listOf(
+            IngredientDTO(null, "Hortelã", 10.0, UnitOfMeasure.GRAMS.name),
+            IngredientDTO(null, "Água", 200.0, UnitOfMeasure.ML.name)
+        )
+        val ingredientsEntity = listOf(
+            Ingredient(null, "Hortelã", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(null, "Água", 200.0, UnitOfMeasure.ML)
+        )
+        val dto = TeaDTO(null, "Chá de Hortelã", "brasil", "Chá refrescante de hortelã", ingredientsDto, TeaCategory.HERBAL, CaffeineLevel.NONE)
+        val entity = Tea(UUID.randomUUID(), "Chá de Hortelã", "brasil", "Chá refrescante de hortelã", ingredientsEntity, TeaCategory.HERBAL, CaffeineLevel.NONE)
         whenever(teaRepository.save(any())).thenReturn(entity)
         val result = teaService.add(dto)
         assertEquals("Chá de Hortelã", result.name)
@@ -87,18 +116,29 @@ class TeaServiceTest {
     @Test
     fun `should update existing tea`() {
         val id = UUID.randomUUID()
-        val entity = Tea(id, "Chá de Erva Cidreira", "brasil", "Chá calmante de erva cidreira", TeaCategory.HERBAL, CaffeineLevel.NONE)
-        val dto = TeaDTO(id, "Chá de Melissa", "brasil", "Chá calmante de melissa", TeaCategory.HERBAL, CaffeineLevel.NONE)
+        val ingredientsEntity = listOf(
+            Ingredient(UUID.randomUUID(), "Erva Cidreira", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
+        val ingredientsDto = listOf(
+            IngredientDTO(null, "Melissa", 10.0, UnitOfMeasure.GRAMS.name),
+            IngredientDTO(null, "Água", 200.0, UnitOfMeasure.ML.name)
+        )
+        val entity = Tea(id, "Chá de Erva Cidreira", "brasil", "Chá calmante de erva cidreira", ingredientsEntity, TeaCategory.HERBAL, CaffeineLevel.NONE)
+        val dto = TeaDTO(id, "Chá de Melissa", "brasil", "Chá calmante de melissa", ingredientsDto, TeaCategory.HERBAL, CaffeineLevel.NONE)
         whenever(teaRepository.findById(id)).thenReturn(entity)
         whenever(teaRepository.update(id, entity)).thenReturn(entity)
         val result = teaService.update(id, dto)
         assertNotNull(result)
+        assertEquals("Chá de Melissa", result!!.name)
+        assertEquals("Chá calmante de melissa", result.description)
+        assertEquals("Melissa", result.ingredients[0].name)
     }
 
     @Test
     fun `should return null when update non-existing tea`() {
         val id = UUID.randomUUID()
-        val dto = TeaDTO(id, "Sencha Atualizado", "china", "Chá verde chinês", TeaCategory.GREEN, CaffeineLevel.LOW)
+        val dto = TeaDTO(id, "Sencha Atualizado", "china", "Chá verde chinês", emptyList(), TeaCategory.GREEN, CaffeineLevel.LOW)
         whenever(teaRepository.findById(id)).thenReturn(null)
         val result = teaService.update(id, dto)
         assertNull(result)
@@ -107,7 +147,7 @@ class TeaServiceTest {
     @Test
     fun `should delete existing tea`() {
         val id = UUID.randomUUID()
-        val tea = Tea(id, "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
+        val tea = Tea(id, "Sencha", "japan", "Chá verde", emptyList(), TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         whenever(teaRepository.findById(id)).thenReturn(tea)
         doNothing().`when`(teaRepository).deleteById(id)
         val result = teaService.delete(id)
@@ -124,9 +164,13 @@ class TeaServiceTest {
 
     @Test
     fun `should delete all teas when no filter is set`() {
+        val ingredients = listOf(
+            Ingredient(UUID.randomUUID(), "Chá Verde", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
         val teas = listOf(
-            Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM),
-            Tea(UUID.randomUUID(), "Earl Grey", "england", "Chá preto", TeaCategory.BLACK, CaffeineLevel.HIGH)
+            Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", ingredients, TeaCategory.GREEN, CaffeineLevel.MEDIUM),
+            Tea(UUID.randomUUID(), "Earl Grey", "england", "Chá preto", ingredients, TeaCategory.BLACK, CaffeineLevel.HIGH)
         )
         whenever(teaRepository.listAll()).thenReturn(teas)
         doNothing().`when`(teaRepository).deleteAll()
@@ -136,9 +180,17 @@ class TeaServiceTest {
 
     @Test
     fun `should delete all teas filter by category`() {
+        val ingredientsBoldo = listOf(
+            Ingredient(UUID.randomUUID(), "Boldo", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
+        val ingredientsCarqueja = listOf(
+            Ingredient(UUID.randomUUID(), "Carqueja", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
         val teas = listOf(
-            Tea(UUID.randomUUID(), "Chá de Boldo", "brasil", "Chá digestivo de boldo", TeaCategory.HERBAL, CaffeineLevel.NONE),
-            Tea(UUID.randomUUID(), "Chá de Carqueja", "brasil", "Chá digestivo de carqueja", TeaCategory.HERBAL, CaffeineLevel.NONE)
+            Tea(UUID.randomUUID(), "Chá de Boldo", "brasil", "Chá digestivo de boldo", ingredientsBoldo, TeaCategory.HERBAL, CaffeineLevel.NONE),
+            Tea(UUID.randomUUID(), "Chá de Carqueja", "brasil", "Chá digestivo de carqueja", ingredientsCarqueja, TeaCategory.HERBAL, CaffeineLevel.NONE)
         )
         whenever(teaRepository.filterTeas(TeaCategory.HERBAL, null, null)).thenReturn(teas)
 
@@ -152,9 +204,18 @@ class TeaServiceTest {
 
     @Test
     fun `should delete all teas filter by caffeine`() {
+        val ingredientsPreto = listOf(
+            Ingredient(UUID.randomUUID(), "Chá Preto", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
+        val ingredientsMate = listOf(
+            Ingredient(UUID.randomUUID(), "Chá Mate", 15.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Limão", 25.0, UnitOfMeasure.ML),
+            Ingredient(UUID.randomUUID(), "Água", 250.0, UnitOfMeasure.ML)
+        )
         val teas = listOf(
-            Tea(UUID.randomUUID(), "Chá Preto", "brasil", "Chá preto forte", TeaCategory.BLACK, CaffeineLevel.HIGH),
-            Tea(UUID.randomUUID(), "Ch�� Mate", "brasil", "Chá mate tostado", TeaCategory.BLACK, CaffeineLevel.HIGH)
+            Tea(UUID.randomUUID(), "Chá Preto", "brasil", "Chá preto forte", ingredientsPreto, TeaCategory.BLACK, CaffeineLevel.HIGH),
+            Tea(UUID.randomUUID(), "Chá Mate", "brasil", "Chá mate tostado", ingredientsMate, TeaCategory.BLACK, CaffeineLevel.HIGH)
         )
         whenever(teaRepository.filterTeas(null, CaffeineLevel.HIGH, null)).thenReturn(teas)
 
@@ -168,9 +229,17 @@ class TeaServiceTest {
 
     @Test
     fun `should delete all teas filter by origin`() {
+        val ingredientsCidreira = listOf(
+            Ingredient(UUID.randomUUID(), "Erva Cidreira", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
+        val ingredientsCamomila = listOf(
+            Ingredient(UUID.randomUUID(), "Camomila", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
         val teas = listOf(
-            Tea(UUID.randomUUID(), "Chá de Cidreira", "brasil", "Chá natural de erva cidreira", TeaCategory.HERBAL, CaffeineLevel.NONE),
-            Tea(UUID.randomUUID(), "Chá de Camomila", "brasil", "Chá calmante de camomila", TeaCategory.HERBAL, CaffeineLevel.NONE)
+            Tea(UUID.randomUUID(), "Chá de Cidreira", "brasil", "Chá natural de erva cidreira", ingredientsCidreira, TeaCategory.HERBAL, CaffeineLevel.NONE),
+            Tea(UUID.randomUUID(), "Chá de Camomila", "brasil", "Chá calmante de camomila", ingredientsCamomila, TeaCategory.HERBAL, CaffeineLevel.NONE)
         )
         whenever(teaRepository.filterTeas(null, null, "brasil")).thenReturn(teas)
 
@@ -184,8 +253,12 @@ class TeaServiceTest {
 
     @Test
     fun `should delete all teas filter by multiple criteria`() {
+        val ingredients = listOf(
+            Ingredient(UUID.randomUUID(), "Chá Verde", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
         val teas = listOf(
-            Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
+            Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", ingredients, TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         )
         whenever(teaRepository.filterTeas(TeaCategory.GREEN, CaffeineLevel.MEDIUM, "japan")).thenReturn(teas)
 
@@ -199,8 +272,12 @@ class TeaServiceTest {
 
     @Test
     fun `should convert strings to enums and delete filtered teas`() {
+        val ingredients = listOf(
+            Ingredient(UUID.randomUUID(), "Chá Verde", 10.0, UnitOfMeasure.GRAMS),
+            Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
+        )
         val teas = listOf(
-            Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", TeaCategory.GREEN, CaffeineLevel.MEDIUM)
+            Tea(UUID.randomUUID(), "Sencha", "japan", "Chá verde", ingredients, TeaCategory.GREEN, CaffeineLevel.MEDIUM)
         )
         whenever(teaRepository.filterTeas(TeaCategory.GREEN, CaffeineLevel.MEDIUM, "japan")).thenReturn(teas)
 
