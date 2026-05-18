@@ -18,6 +18,7 @@ class TeaRepository {
             name = tea.name,
             origin = tea.origin,
             description = tea.description,
+            ingredients = tea.ingredients,
             category = tea.category,
             caffeineLevel = tea.caffeineLevel
         )
@@ -44,6 +45,7 @@ class TeaRepository {
                 name = tea.name,
                 origin = tea.origin,
                 description = tea.description,
+                ingredients = tea.ingredients,
                 category = tea.category,
                 caffeineLevel = tea.caffeineLevel
             )
