@@ -1,6 +1,6 @@
 # tea-and-snacks
 
-API to manage maddox bar tea and snacks catalog.
+API to manage madoxx bar tea and snacks catalog.
 
 ## Starting db
 
@@ -404,7 +404,7 @@ can be packaged using:
 ```
 
 produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
+be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
 
 then runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
 
@@ -436,52 +436,5 @@ also, ill try to keep this updated. :D
 
 ---
 
-## 🚀 Próximos Passos
-
-### **1. 🔧 Melhorias na Autenticação**
-- [ ] **Refresh Token**: Implementar tokens de renovação
-- [ ] **Email Verification**: Enviar email de confirmação após registro (maybe)
-- [ ] **Password Reset**: Endpoint para recuperação de senha via email
-- [ ] **Rate Limiting**: Limitar tentativas de login para prevenir ataques de força bruta
-- [ ] **Audit Log**: Registrar ações importantes (login, logout, alterações críticas)
-
-### **2. 🎯 Gestão de Permissões (RBAC)**
-- [ ] Adicionar `@RolesAllowed("ADMIN")` nos endpoints de DELETE (teas, snacks, sauces)
-- [ ] Criar role `MANAGER` para operações intermediárias
-- [ ] Endpoint para admin gerenciar roles de outros usuários
-- [ ] Endpoint para admin reativar contas desativadas
-- [ ] Endpoint para admin desativar usuários (soft delete)
-
-### **3. 📊 Relatórios e Analytics**
-- [ ] Endpoint para estatísticas (total de chás por categoria, snacks veganos, etc.)
-- [ ] Dashboard endpoint com métricas gerais
-- [ ] Endpoint de produtos mais populares/acessados
-
-### **4. 🔍 Melhorias de Busca**
-- [ ] **Full-text search** nos produtos (buscar por nome, descrição, ingredientes)
-- [ ] **Autocomplete** para busca rápida
-
-### **5. 🖼️ Upload de Imagens**
-- [ ] Adicionar campo `imageUrl` nas entidades
-- [ ] Endpoint para upload de imagens de produtos
-- [ ] Integração com storage (S3, MinIO, ou local)
-
-### **6. 🧪 Testes**
-- [ ] **Testes de Integração** para autenticação JWT
-- [ ] Testes para os novos endpoints de usuários
-- [ ] Testes de permissões (verificar 403 Forbidden)
-- [ ] Testes de segurança (tentativas de acesso não autorizado)
-
-### **7. 🐳 DevOps**
-- [ ] **CI/CD** com GitHub Actions
-- [ ] **Docker** multi-stage build
-- [ ] **Kubernetes** manifests para deploy
-- [ ] **Monitoring** com Prometheus/Grafana
-- [ ] **Logging** centralizado
-
-### **8. 📱 API Evolution**
-- [ ] Versionamento de API (v1, v2)
-- [ ] Editar constantes swagger novos endpoints
-
----
+_this is a work in progress. see [next-steps.md](./next-steps.md) for upcoming features and technical roadmap._
 
