@@ -1,6 +1,6 @@
 package sysout.openups.auth.repository
 
-import io.quarkus.hibernate.orm.panache.PanacheRepository
+import io.quarkus.hibernate.orm.panache.kotlin.PanacheRepository
 import jakarta.enterprise.context.ApplicationScoped
 import sysout.openups.auth.entity.User
 
@@ -15,4 +15,3 @@ class UserRepository : PanacheRepository<User> {
         return count("username", username) > 0
     }
 }
-

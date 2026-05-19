@@ -1,65 +1,62 @@
 package sysout.openups.product.repository
 
+import io.quarkus.hibernate.orm.panache.kotlin.PanacheRepository
 import jakarta.enterprise.context.ApplicationScoped
 import sysout.openups.product.entity.CaffeineLevel
 import sysout.openups.product.entity.Tea
 import sysout.openups.product.entity.TeaCategory
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 @ApplicationScoped
-class TeaRepository {
-    private val teas = ConcurrentHashMap<UUID, Tea>()
+class TeaRepository : PanacheRepository<Tea> {
 
     fun save(tea: Tea): Tea {
-        val id = tea.id ?: UUID.randomUUID()
-        val newTea = Tea(
-            id = id,
-            name = tea.name,
-            origin = tea.origin,
-            description = tea.description,
-            ingredients = tea.ingredients,
-            category = tea.category,
-            caffeineLevel = tea.caffeineLevel
-        )
-        teas[id] = newTea
-        return newTea
+        if (tea.id == null) {
+            persist(tea)
+        } else {
+            getEntityManager().merge(tea)
+        }
+        return tea
     }
 
-    fun findById(id: UUID): Tea? {
-        return teas[id]
+    fun findByIdOrNull(id: UUID): Tea? {
+        return find("id", id).firstResult()
     }
 
     fun deleteById(id: UUID) {
-        teas.remove(id)
-    }
-
-    fun deleteAll() {
-        teas.clear()
+        delete("id", id)
     }
 
     fun update(id: UUID, tea: Tea): Tea? {
-        return teas.computeIfPresent(id) { _, _ ->
-            Tea(
-                id = id,
-                name = tea.name,
-                origin = tea.origin,
-                description = tea.description,
-                ingredients = tea.ingredients,
-                category = tea.category,
-                caffeineLevel = tea.caffeineLevel
-            )
-        }
+        val existing = findByIdOrNull(id) ?: return null
+        existing.name = tea.name
+        existing.origin = tea.origin
+        existing.description = tea.description
+        existing.ingredients = tea.ingredients
+        existing.category = tea.category
+        existing.caffeineLevel = tea.caffeineLevel
+        persist(existing)
+        return existing
     }
 
-    fun listAll(): List<Tea> = teas.values.toList()
-
     fun filterTeas(category: TeaCategory?, caffeineLevel: CaffeineLevel?, origin: String?): List<Tea> {
-        return teas.values.filter { tea ->
-            (category == null || tea.category == category) &&
-            (caffeineLevel == null || tea.caffeineLevel == caffeineLevel) &&
-            (origin == null || tea.origin.equals(origin, ignoreCase = true))
+        val query = StringBuilder("FROM Tea WHERE 1=1")
+        val params = mutableMapOf<String, Any>()
+
+        category?.let {
+            query.append(" AND category = :category")
+            params["category"] = it
         }
+        caffeineLevel?.let {
+            query.append(" AND caffeineLevel = :caffeineLevel")
+            params["caffeineLevel"] = it
+        }
+        origin?.let {
+            query.append(" AND LOWER(origin) = LOWER(:origin)")
+            params["origin"] = it
+        }
+
+        return find(query.toString(), params).list()
     }
 
     fun filterTeasPaginated(
@@ -69,9 +66,25 @@ class TeaRepository {
         page: Int,
         size: Int
     ): List<Tea> {
-        return filterTeas(category, caffeineLevel, origin)
-            .drop(page * size)
-            .take(size)
+        val query = StringBuilder("FROM Tea WHERE 1=1")
+        val params = mutableMapOf<String, Any>()
+
+        category?.let {
+            query.append(" AND category = :category")
+            params["category"] = it
+        }
+        caffeineLevel?.let {
+            query.append(" AND caffeineLevel = :caffeineLevel")
+            params["caffeineLevel"] = it
+        }
+        origin?.let {
+            query.append(" AND LOWER(origin) = LOWER(:origin)")
+            params["origin"] = it
+        }
+
+        return find(query.toString(), params)
+            .page(page, size)
+            .list()
     }
 
     fun countFilteredTeas(
@@ -79,6 +92,22 @@ class TeaRepository {
         caffeineLevel: CaffeineLevel?,
         origin: String?
     ): Long {
-        return filterTeas(category, caffeineLevel, origin).size.toLong()
+        val query = StringBuilder("FROM Tea WHERE 1=1")
+        val params = mutableMapOf<String, Any>()
+
+        category?.let {
+            query.append(" AND category = :category")
+            params["category"] = it
+        }
+        caffeineLevel?.let {
+            query.append(" AND caffeineLevel = :caffeineLevel")
+            params["caffeineLevel"] = it
+        }
+        origin?.let {
+            query.append(" AND LOWER(origin) = LOWER(:origin)")
+            params["origin"] = it
+        }
+
+        return count(query.toString().replace("FROM Tea WHERE", ""), params)
     }
 }

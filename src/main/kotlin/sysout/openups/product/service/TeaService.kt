@@ -2,6 +2,7 @@ package sysout.openups.product.service
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import jakarta.transaction.Transactional
 import sysout.openups.common.pagination.PaginatedResponse
 import sysout.openups.common.pagination.PaginationUtils
 import sysout.openups.product.dto.IngredientDTO
@@ -16,12 +17,13 @@ import sysout.openups.util.EnumConverter
 import java.util.*
 
 @ApplicationScoped
+@Transactional
 class TeaService @Inject constructor(
     private val teaRepository: TeaRepository
 ) {
     fun listAll(): List<TeaDTO> = teaRepository.listAll().map { toDTO(it) }
 
-    fun findById(id: UUID): TeaDTO? = teaRepository.findById(id)?.let { toDTO(it) }
+    fun findById(id: UUID): TeaDTO? = teaRepository.findByIdOrNull(id)?.let { toDTO(it) }
 
     fun add(dto: TeaDTO): TeaDTO {
         val tea = Tea(
@@ -37,7 +39,7 @@ class TeaService @Inject constructor(
     }
 
     fun update(id: UUID, dto: TeaDTO): TeaDTO? {
-        val entity = teaRepository.findById(id) ?: return null
+        val entity = teaRepository.findByIdOrNull(id) ?: return null
         entity.name = dto.name
         entity.origin = dto.origin
         entity.description = dto.description
@@ -49,7 +51,7 @@ class TeaService @Inject constructor(
     }
 
     fun delete(id: UUID): Boolean {
-        val exists = teaRepository.findById(id) != null
+        val exists = teaRepository.findByIdOrNull(id) != null
         if (exists) teaRepository.deleteById(id)
         return exists
     }
