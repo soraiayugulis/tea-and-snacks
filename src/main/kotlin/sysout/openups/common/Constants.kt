@@ -93,4 +93,28 @@ object Constants {
         const val SNACK_DELETE = "Delete a snack"
         const val SNACK_DELETE_ALL = "Delete all snacks"
     }
+
+    /**
+     * RBAC Role Hierarchy: USER < MANAGER < ADMIN
+     */
+    object Security {
+        object Roles {
+            const val USER = "USER"
+            const val MANAGER = "MANAGER"
+            const val ADMIN = "ADMIN"
+        }
+
+        object RoleRank {
+            const val USER_RANK = 1
+            const val MANAGER_RANK = 2
+            const val ADMIN_RANK = 3
+        }
+
+        object Permissions {
+            const val READ_ONLY = "Read-only access to public endpoints"
+            const val MANAGE_PRODUCTS = "Create, update, delete individual products"
+            const val BULK_OPERATIONS = "Perform bulk delete operations"
+            const val USER_MANAGEMENT = "Manage user roles and account status"
+        }
+    }
 }
