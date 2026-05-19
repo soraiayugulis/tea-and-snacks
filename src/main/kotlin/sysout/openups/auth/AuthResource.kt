@@ -18,7 +18,9 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag
 import sysout.openups.auth.dto.LoginRequest
 import sysout.openups.auth.dto.LoginResponse
 import sysout.openups.auth.dto.RegisterRequest
+import sysout.openups.auth.dto.UpdateUserRolesRequest
 import sysout.openups.auth.dto.UserInfo
+import sysout.openups.auth.entity.Role
 import sysout.openups.auth.service.AuthService
 
 @Path("/auth")
@@ -212,10 +214,10 @@ class AuthResource @Inject constructor(
 
     @GET
     @Path("/users")
-    @RolesAllowed("ADMIN")
+    @RolesAllowed("ADMIN", "MANAGER")
     @Operation(
         summary = "List all users",
-        description = "Returns a list of all users with optional filter for active users only (Admin only)"
+        description = "Returns a list of all users with optional filter for active users only (Admin and Manager only)"
     )
     @APIResponses(
         value = [
@@ -233,7 +235,7 @@ class AuthResource @Inject constructor(
             ),
             APIResponse(
                 responseCode = "403",
-                description = "User does not have ADMIN role"
+                description = "User does not have required role"
             )
         ]
     )
@@ -242,5 +244,230 @@ class AuthResource @Inject constructor(
     ): Response {
         val users = authService.listUsers(active)
         return Response.ok(users).build()
+    }
+
+    @PUT
+    @Path("/users/{username}/roles")
+    @RolesAllowed("ADMIN", "MANAGER")
+    @Operation(
+        summary = "Update user roles",
+        description = "Update roles for a specific user. Only ADMIN can assign ADMIN role."
+    )
+    @APIResponses(
+        value = [
+            APIResponse(
+                responseCode = "200",
+                description = "User roles updated successfully",
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = UserInfo::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = "400",
+                description = "Invalid role assignment"
+            ),
+            APIResponse(
+                responseCode = "401",
+                description = "User not authenticated"
+            ),
+            APIResponse(
+                responseCode = "403",
+                description = "Insufficient privileges to assign roles"
+            ),
+            APIResponse(
+                responseCode = "404",
+                description = "User not found"
+            )
+        ]
+    )
+    fun updateUserRoles(
+        @PathParam("username") username: String,
+        @RequestBody(
+            description = "New roles for the user",
+            required = true,
+            content = [Content(schema = Schema(implementation = UpdateUserRolesRequest::class))]
+        )
+        request: UpdateUserRolesRequest,
+        @Context securityContext: SecurityContext
+    ): Response {
+        val requesterRoles = securityContext.userPrincipal?.name?.let {
+            authService.getUserByUsername(it)?.roles
+        } ?: return Response.status(Response.Status.UNAUTHORIZED)
+            .entity(mapOf("message" to "Not authenticated"))
+            .build()
+
+        val targetUser = authService.getUserByUsername(username)
+            ?: return Response.status(Response.Status.NOT_FOUND)
+                .entity(mapOf("message" to "User not found"))
+                .build()
+
+        if (!authService.canManageUser(requesterRoles, targetUser.roles)) {
+            return Response.status(Response.Status.FORBIDDEN)
+                .entity(mapOf("message" to "Cannot manage user with equal or higher privileges"))
+                .build()
+        }
+
+        val newRoles = request.roles.mapNotNull { roleName ->
+            try {
+                Role.valueOf(roleName.uppercase())
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }.toSet()
+
+        if (!authService.validateRoleAssignment(requesterRoles, newRoles)) {
+            return Response.status(Response.Status.FORBIDDEN)
+                .entity(mapOf("message" to "Cannot assign ADMIN role"))
+                .build()
+        }
+
+        return try {
+            val updatedUser = authService.updateUserRoles(username, newRoles)
+            val userInfo = UserInfo(
+                username = updatedUser.username,
+                email = updatedUser.email,
+                roles = updatedUser.roles.map { it.name }.toSet()
+            )
+            Response.ok(userInfo).build()
+        } catch (e: IllegalArgumentException) {
+            Response.status(Response.Status.NOT_FOUND)
+                .entity(mapOf("message" to e.message))
+                .build()
+        }
+    }
+
+    @POST
+    @Path("/users/{username}/activate")
+    @RolesAllowed("ADMIN", "MANAGER")
+    @Operation(
+        summary = "Activate user account",
+        description = "Reactivate a deactivated user account"
+    )
+    @APIResponses(
+        value = [
+            APIResponse(
+                responseCode = "200",
+                description = "User activated successfully",
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = UserInfo::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = "401",
+                description = "User not authenticated"
+            ),
+            APIResponse(
+                responseCode = "403",
+                description = "Insufficient privileges"
+            ),
+            APIResponse(
+                responseCode = "404",
+                description = "User not found"
+            )
+        ]
+    )
+    fun activateUser(
+        @PathParam("username") username: String,
+        @Context securityContext: SecurityContext
+    ): Response {
+        val requesterRoles = securityContext.userPrincipal?.name?.let {
+            authService.getUserByUsername(it)?.roles
+        } ?: return Response.status(Response.Status.UNAUTHORIZED)
+            .entity(mapOf("message" to "Not authenticated"))
+            .build()
+
+        val targetUser = authService.getUserByUsername(username)
+            ?: return Response.status(Response.Status.NOT_FOUND)
+                .entity(mapOf("message" to "User not found"))
+                .build()
+
+        if (!authService.canManageUser(requesterRoles, targetUser.roles)) {
+            return Response.status(Response.Status.FORBIDDEN)
+                .entity(mapOf("message" to "Cannot manage user with equal or higher privileges"))
+                .build()
+        }
+
+        return try {
+            val updatedUser = authService.activateUser(username)
+            val userInfo = UserInfo(
+                username = updatedUser.username,
+                email = updatedUser.email,
+                roles = updatedUser.roles.map { it.name }.toSet()
+            )
+            Response.ok(userInfo).build()
+        } catch (e: IllegalArgumentException) {
+            Response.status(Response.Status.NOT_FOUND)
+                .entity(mapOf("message" to e.message))
+                .build()
+        }
+    }
+
+    @POST
+    @Path("/users/{username}/deactivate")
+    @RolesAllowed("ADMIN", "MANAGER")
+    @Operation(
+        summary = "Deactivate user account",
+        description = "Soft delete - deactivate a user account"
+    )
+    @APIResponses(
+        value = [
+            APIResponse(
+                responseCode = "200",
+                description = "User deactivated successfully",
+                content = [Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = Schema(implementation = UserInfo::class)
+                )]
+            ),
+            APIResponse(
+                responseCode = "401",
+                description = "User not authenticated"
+            ),
+            APIResponse(
+                responseCode = "403",
+                description = "Insufficient privileges"
+            ),
+            APIResponse(
+                responseCode = "404",
+                description = "User not found"
+            )
+        ]
+    )
+    fun deactivateUser(
+        @PathParam("username") username: String,
+        @Context securityContext: SecurityContext
+    ): Response {
+        val requesterRoles = securityContext.userPrincipal?.name?.let {
+            authService.getUserByUsername(it)?.roles
+        } ?: return Response.status(Response.Status.UNAUTHORIZED)
+            .entity(mapOf("message" to "Not authenticated"))
+            .build()
+
+        val targetUser = authService.getUserByUsername(username)
+            ?: return Response.status(Response.Status.NOT_FOUND)
+                .entity(mapOf("message" to "User not found"))
+                .build()
+
+        if (!authService.canManageUser(requesterRoles, targetUser.roles)) {
+            return Response.status(Response.Status.FORBIDDEN)
+                .entity(mapOf("message" to "Cannot manage user with equal or higher privileges"))
+                .build()
+        }
+
+        return try {
+            val updatedUser = authService.deactivateUser(username)
+            val userInfo = UserInfo(
+                username = updatedUser.username,
+                email = updatedUser.email,
+                roles = updatedUser.roles.map { it.name }.toSet()
+            )
+            Response.ok(userInfo).build()
+        } catch (e: IllegalArgumentException) {
+            Response.status(Response.Status.NOT_FOUND)
+                .entity(mapOf("message" to e.message))
+                .build()
+        }
     }
 }
