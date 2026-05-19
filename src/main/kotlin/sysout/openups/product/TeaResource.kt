@@ -1,5 +1,6 @@
 package sysout.openups.product
 
+import jakarta.annotation.security.RolesAllowed
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
@@ -181,6 +182,7 @@ class TeaResource @Inject constructor(
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("ADMIN", "MANAGER")
     @Operation(
         summary = TEA_DELETE,
         description = "Removes a tea from the system"
@@ -205,9 +207,10 @@ class TeaResource @Inject constructor(
     }
 
     @DELETE
+    @RolesAllowed("ADMIN")
     @Operation(
         summary = TEA_DELETE_FILTER,
-        description = "Removes teas from the system, optionally filtered by category, caffeine level, or origin"
+        description = "Removes teas from the system, optionally filtered by category, caffeine level, or origin (Admin only)"
     )
     @APIResponses(
         value = [
