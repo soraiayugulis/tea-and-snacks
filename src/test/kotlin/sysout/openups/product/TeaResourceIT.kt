@@ -20,6 +20,7 @@ class TeaResourceIT : BaseResourceIT() {
 
     @BeforeEach
     fun cleanTeas() {
+        super.setUp() // Seed database with users
         adminToken = AuthTestHelper.getAdminToken()
         RestAssured.given()
             .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))

@@ -18,6 +18,7 @@ class SauceResourceIT : BaseResourceIT() {
 
     @BeforeEach
     fun cleanDb() {
+        super.setUp() // Seed database with users
         adminToken = AuthTestHelper.getAdminToken()
         RestAssured.given()
             .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
