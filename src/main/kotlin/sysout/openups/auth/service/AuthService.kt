@@ -96,6 +96,64 @@ class AuthService @Inject constructor(
         }
     }
 
+    @Transactional
+    fun updateUserRoles(username: String, newRoles: Set<Role>): User {
+        val user = userRepository.findByUsername(username)
+            ?: throw IllegalArgumentException("User not found")
+
+        user.roles.clear()
+        user.roles.addAll(newRoles)
+        userRepository.persist(user)
+        return user
+    }
+
+    @Transactional
+    fun activateUser(username: String): User {
+        val user = userRepository.findByUsername(username)
+            ?: throw IllegalArgumentException("User not found")
+
+        user.active = true
+        userRepository.persist(user)
+        return user
+    }
+
+    @Transactional
+    fun deactivateUser(username: String): User {
+        val user = userRepository.findByUsername(username)
+            ?: throw IllegalArgumentException("User not found")
+
+        user.active = false
+        userRepository.persist(user)
+        return user
+    }
+
+    fun validateRoleAssignment(requesterRoles: Set<Role>, targetRoles: Set<Role>): Boolean {
+        val hasAdmin = requesterRoles.contains(Role.ADMIN)
+        val assignsAdmin = targetRoles.contains(Role.ADMIN)
+
+        return !assignsAdmin || hasAdmin
+    }
+
+    fun canManageUser(requesterRoles: Set<Role>, targetUserRoles: Set<Role>): Boolean {
+        if (requesterRoles.contains(Role.ADMIN)) {
+            return true
+        }
+
+        val requesterRank = getHighestRoleRank(requesterRoles)
+        val targetRank = getHighestRoleRank(targetUserRoles)
+
+        return requesterRank > targetRank
+    }
+
+    private fun getHighestRoleRank(roles: Set<Role>): Int {
+        return when {
+            roles.contains(Role.ADMIN) -> 3
+            roles.contains(Role.MANAGER) -> 2
+            roles.contains(Role.USER) -> 1
+            else -> 0
+        }
+    }
+
     private fun hashPassword(password: String): String {
         val salt = ByteArray(BCryptPassword.BCRYPT_SALT_SIZE)
         SecureRandom().nextBytes(salt)
