@@ -16,14 +16,6 @@ import sysout.openups.config.seed.BaseResourceIT
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TeaResourceIT : BaseResourceIT() {
 
-    @BeforeEach
-    fun setup() {
-        // Ensure users are seeded for authentication
-        userSeeder.reset()
-        userSeeder.seed()
-    }
-
-
     @Test
     fun `should add and find tea`() {
         val teaJson = """

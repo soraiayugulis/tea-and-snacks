@@ -14,12 +14,6 @@ import sysout.openups.config.seed.BaseResourceIT
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SnackResourceIT : BaseResourceIT() {
 
-    @BeforeEach
-    fun setup() {
-        userSeeder.reset()
-        userSeeder.seed()
-    }
-
     @Test
     fun `should add and find snack`() {
         val snackJson = """
