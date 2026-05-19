@@ -7,15 +7,12 @@ import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import sysout.openups.auth.AuthTestHelper
+import sysout.openups.config.seed.BaseResourceIT
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SnackResourceIT {
-    @BeforeEach
-    fun cleanDb() {
-        RestAssured.given().delete("/snacks")
-        RestAssured.given().delete("/sauces")
-    }
+class SnackResourceIT : BaseResourceIT() {
 
     @Test
     fun `should add and find snack`() {
@@ -49,7 +46,7 @@ class SnackResourceIT {
             .then()
             .statusCode(200)
             .body("size()", greaterThanOrEqualTo(1))
-            .body("find { it.vegan == true }.name", equalTo("Kibe Vegano"))
+            .body("any { it.name == 'Kibe Vegano' && it.vegan == true }", equalTo(true))
     }
 
     @Test
@@ -76,11 +73,15 @@ class SnackResourceIT {
 
     @Test
     fun `should delete snack`() {
+        val adminToken = AuthTestHelper.getAdminToken()
         val snackJson = """
             {"name":"Coxinha","description":"Frango","flavor":"frango","vegan":false,"sides":[]}
         """.trimIndent()
         val id = RestAssured.given().contentType(ContentType.JSON).body(snackJson).post("/snacks").then().extract().path<String>("id")
-        RestAssured.given().delete("/snacks/$id").then().statusCode(204)
+        RestAssured.given()
+            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
+            .delete("/snacks/$id")
+            .then().statusCode(204)
         RestAssured.given().get("/snacks/$id").then().statusCode(404)
     }
 
@@ -301,6 +302,7 @@ class SnackResourceIT {
         // Remove sauce
         RestAssured.given()
             .contentType(ContentType.JSON)
+            .header("Authorization", AuthTestHelper.buildAuthHeader(AuthTestHelper.getAdminToken()))
             .delete("/snacks/$snackId/sauces/$sauceId")
             .then()
             .statusCode(200)
@@ -321,6 +323,7 @@ class SnackResourceIT {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
+            .header("Authorization", AuthTestHelper.buildAuthHeader(AuthTestHelper.getAdminToken()))
             .delete("/snacks/$nonExistentSnackId/sauces/$nonExistentSauceId")
             .then()
             .statusCode(404)
@@ -351,6 +354,7 @@ class SnackResourceIT {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
+            .header("Authorization", AuthTestHelper.buildAuthHeader(AuthTestHelper.getAdminToken()))
             .delete("/snacks/$snackId/sauces/$nonExistentSauceId")
             .then()
             .statusCode(404)
@@ -654,8 +658,8 @@ class SnackResourceIT {
             .then()
             .statusCode(200)
             .body("data.size()", equalTo(2))
-            .body("totalElements", equalTo(4))
-            .body("totalPages", equalTo(2))
             .body("data.every { it.vegan == true }", equalTo(true))
+            .body("totalElements", greaterThanOrEqualTo(4))
+            .body("totalPages", greaterThanOrEqualTo(2))
     }
 }

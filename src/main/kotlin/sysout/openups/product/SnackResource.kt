@@ -1,5 +1,6 @@
 package sysout.openups.product
 
+import jakarta.annotation.security.RolesAllowed
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
@@ -189,6 +190,7 @@ class SnackResource @Inject constructor(
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("ADMIN", "MANAGER")
     @Operation(
         summary = SNACK_DELETE,
         description = "Removes a snack from the system"
@@ -213,9 +215,10 @@ class SnackResource @Inject constructor(
     }
 
     @DELETE
+    @RolesAllowed("ADMIN")
     @Operation(
         summary = SNACK_DELETE_ALL,
-        description = "Removes all snacks from the system"
+        description = "Removes all snacks from the system (Admin only)"
     )
     @APIResponses(
         value = [
@@ -303,6 +306,7 @@ class SnackResource @Inject constructor(
 
     @DELETE
     @Path("/{id}/sauces/{sauceId}")
+    @RolesAllowed("ADMIN", "MANAGER")
     @Operation(
         summary = SAUCE_REMOVE_FROM_SNACK,
         description = "Removes a specific sauce from a specific snack"

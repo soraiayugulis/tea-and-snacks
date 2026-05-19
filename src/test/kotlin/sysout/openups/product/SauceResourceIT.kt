@@ -7,14 +7,12 @@ import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import sysout.openups.auth.AuthTestHelper
+import sysout.openups.config.seed.BaseResourceIT
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SauceResourceIT {
-    @BeforeEach
-    fun cleanDb() {
-        RestAssured.given().delete("/sauces")
-    }
+class SauceResourceIT : BaseResourceIT() {
 
     @Test
     fun `should add and find sauce`() {
@@ -70,11 +68,15 @@ class SauceResourceIT {
 
     @Test
     fun `should delete sauce`() {
+        val adminToken = AuthTestHelper.getAdminToken()
         val sauceJson = """
             {"name":"Barbecue","flavour":"barbecue"}
         """.trimIndent()
         val id = RestAssured.given().contentType(ContentType.JSON).body(sauceJson).post("/sauces").then().extract().path<String>("id")
-        RestAssured.given().delete("/sauces/$id").then().statusCode(204)
+        RestAssured.given()
+            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
+            .delete("/sauces/$id")
+            .then().statusCode(204)
         RestAssured.given().get("/sauces/$id").then().statusCode(404)
     }
 
