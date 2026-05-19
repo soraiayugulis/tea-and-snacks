@@ -7,14 +7,24 @@ import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import sysout.openups.auth.AuthTestHelper
+import sysout.openups.config.seed.BaseResourceIT
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SnackResourceIT {
+class SnackResourceIT : BaseResourceIT() {
+
+    private lateinit var adminToken: String
+
     @BeforeEach
     fun cleanDb() {
-        RestAssured.given().delete("/snacks")
-        RestAssured.given().delete("/sauces")
+        adminToken = AuthTestHelper.getAdminToken()
+        RestAssured.given()
+            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
+            .delete("/snacks")
+        RestAssured.given()
+            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
+            .delete("/sauces")
     }
 
     @Test

@@ -9,13 +9,21 @@ import org.junit.jupiter.api.TestInstance
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.greaterThanOrEqualTo
 import org.hamcrest.Matchers.lessThanOrEqualTo
+import sysout.openups.auth.AuthTestHelper
+import sysout.openups.config.seed.BaseResourceIT
 
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TeaResourceIT {
+class TeaResourceIT : BaseResourceIT() {
+
+    private lateinit var adminToken: String
+
     @BeforeEach
-    fun cleanDb() {
-        RestAssured.given().delete("/teas")
+    fun cleanTeas() {
+        adminToken = AuthTestHelper.getAdminToken()
+        RestAssured.given()
+            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
+            .delete("/teas")
     }
 
     @Test
@@ -79,7 +87,10 @@ class TeaResourceIT {
             {"name":"Sencha","origin":"japan","description":"Chá verde","ingredients":[{"name":"Green Tea Leaves","quantity":5.0,"unitOfMeasure":"GRAMS"}],"category":"GREEN","caffeineLevel":"MEDIUM"}
         """.trimIndent()
         val id = RestAssured.given().contentType(ContentType.JSON).body(teaJson).post("/teas").then().extract().path<String>("id")
-        RestAssured.given().delete("/teas/$id").then().statusCode(204)
+        RestAssured.given()
+            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
+            .delete("/teas/$id")
+            .then().statusCode(204)
         RestAssured.given().get("/teas/$id").then().statusCode(404)
     }
 
