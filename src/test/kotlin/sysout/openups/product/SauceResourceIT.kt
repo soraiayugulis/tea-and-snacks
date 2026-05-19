@@ -14,15 +14,10 @@ import sysout.openups.config.seed.BaseResourceIT
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SauceResourceIT : BaseResourceIT() {
 
-    private lateinit var adminToken: String
-
     @BeforeEach
-    fun cleanDb() {
-        super.setUp() // Seed database with users
-        adminToken = AuthTestHelper.getAdminToken()
-        RestAssured.given()
-            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
-            .delete("/sauces")
+    fun setup() {
+        userSeeder.reset()
+        userSeeder.seed()
     }
 
     @Test
@@ -79,11 +74,15 @@ class SauceResourceIT : BaseResourceIT() {
 
     @Test
     fun `should delete sauce`() {
+        val adminToken = AuthTestHelper.getAdminToken()
         val sauceJson = """
             {"name":"Barbecue","flavour":"barbecue"}
         """.trimIndent()
         val id = RestAssured.given().contentType(ContentType.JSON).body(sauceJson).post("/sauces").then().extract().path<String>("id")
-        RestAssured.given().delete("/sauces/$id").then().statusCode(204)
+        RestAssured.given()
+            .header("Authorization", AuthTestHelper.buildAuthHeader(adminToken))
+            .delete("/sauces/$id")
+            .then().statusCode(204)
         RestAssured.given().get("/sauces/$id").then().statusCode(404)
     }
 
