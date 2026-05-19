@@ -2,6 +2,7 @@ package sysout.openups.product.service
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import jakarta.transaction.Transactional
 import sysout.openups.common.pagination.PaginatedResponse
 import sysout.openups.common.pagination.PaginationUtils
 import sysout.openups.product.dto.IngredientDTO
@@ -16,6 +17,7 @@ import sysout.openups.util.EnumConverter
 import java.util.*
 
 @ApplicationScoped
+@Transactional
 class TeaService @Inject constructor(
     private val teaRepository: TeaRepository
 ) {

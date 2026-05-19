@@ -14,7 +14,7 @@ class TeaRepository : PanacheRepository<Tea> {
         if (tea.id == null) {
             persist(tea)
         } else {
-            entityManager.merge(tea)
+            getEntityManager().merge(tea)
         }
         return tea
     }

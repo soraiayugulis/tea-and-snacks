@@ -82,7 +82,7 @@ class TeaServiceTest {
             Ingredient(UUID.randomUUID(), "Água", 200.0, UnitOfMeasure.ML)
         )
         val tea = Tea(id, "Sencha", "japan", "Chá verde", ingredients, TeaCategory.GREEN, CaffeineLevel.MEDIUM)
-        whenever(teaRepository.findById(id)).thenReturn(tea)
+        whenever(teaRepository.findByIdOrNull(id)).thenReturn(tea)
         val result = teaService.findById(id)
         assertNotNull(result)
         assertEquals("Sencha", result!!.name)
@@ -91,7 +91,7 @@ class TeaServiceTest {
     @Test
     fun `should return null if getting a non-existing tea`() {
         val id = UUID.randomUUID()
-        whenever(teaRepository.findById(id)).thenReturn(null)
+        whenever(teaRepository.findByIdOrNull(id)).thenReturn(null)
         val result = teaService.findById(id)
         assertNull(result)
     }
@@ -126,7 +126,7 @@ class TeaServiceTest {
         )
         val entity = Tea(id, "Chá de Erva Cidreira", "brasil", "Chá calmante de erva cidreira", ingredientsEntity, TeaCategory.HERBAL, CaffeineLevel.NONE)
         val dto = TeaDTO(id, "Chá de Melissa", "brasil", "Chá calmante de melissa", ingredientsDto, TeaCategory.HERBAL, CaffeineLevel.NONE)
-        whenever(teaRepository.findById(id)).thenReturn(entity)
+        whenever(teaRepository.findByIdOrNull(id)).thenReturn(entity)
         whenever(teaRepository.update(id, entity)).thenReturn(entity)
         val result = teaService.update(id, dto)
         assertNotNull(result)
@@ -139,7 +139,7 @@ class TeaServiceTest {
     fun `should return null when update non-existing tea`() {
         val id = UUID.randomUUID()
         val dto = TeaDTO(id, "Sencha Atualizado", "china", "Chá verde chinês", emptyList(), TeaCategory.GREEN, CaffeineLevel.LOW)
-        whenever(teaRepository.findById(id)).thenReturn(null)
+        whenever(teaRepository.findByIdOrNull(id)).thenReturn(null)
         val result = teaService.update(id, dto)
         assertNull(result)
     }
@@ -148,7 +148,7 @@ class TeaServiceTest {
     fun `should delete existing tea`() {
         val id = UUID.randomUUID()
         val tea = Tea(id, "Sencha", "japan", "Chá verde", emptyList(), TeaCategory.GREEN, CaffeineLevel.MEDIUM)
-        whenever(teaRepository.findById(id)).thenReturn(tea)
+        whenever(teaRepository.findByIdOrNull(id)).thenReturn(tea)
         doNothing().`when`(teaRepository).deleteById(id)
         val result = teaService.delete(id)
         assertTrue(result)
@@ -157,7 +157,7 @@ class TeaServiceTest {
     @Test
     fun `should return false when delete non-existing tea`() {
         val id = UUID.randomUUID()
-        whenever(teaRepository.findById(id)).thenReturn(null)
+        whenever(teaRepository.findByIdOrNull(id)).thenReturn(null)
         val result = teaService.delete(id)
         assertFalse(result)
     }
@@ -173,7 +173,7 @@ class TeaServiceTest {
             Tea(UUID.randomUUID(), "Earl Grey", "england", "Chá preto", ingredients, TeaCategory.BLACK, CaffeineLevel.HIGH)
         )
         whenever(teaRepository.listAll()).thenReturn(teas)
-        doNothing().`when`(teaRepository).deleteAll()
+        whenever(teaRepository.deleteAll()).thenReturn(2L)
         val result = teaService.deleteAll(null, null, null)
         assertEquals(2, result)
     }
