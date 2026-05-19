@@ -8,12 +8,12 @@
 - [ ] **Brute Force Protection**: Implement progressive delay and account lockout policies
 - [ ] **Audit Trail**: Structured logging for security events (login/logout, sensitive operations)
 
-## 2. Role-Based Access Control (RBAC)
+## 2. Role-Based Access Control (RBAC) ✅ (2026-05-18)
 
-- [ ] **Endpoint Protection**: Apply `@RolesAllowed` annotations to destructive operations (DELETE endpoints)
-- [ ] **Manager Role**: Introduce intermediate privilege level between USER and ADMIN
-- [ ] **User Management API**: Admin endpoints for role assignment and modification
-- [ ] **Account Lifecycle**: Soft delete (deactivation) and reactivation endpoints
+- [x] **Endpoint Protection**: Apply `@RolesAllowed` annotations to destructive operations (DELETE endpoints) - Protected Tea, Snack, Sauce DELETE endpoints
+- [x] **Manager Role**: Introduce intermediate privilege level between USER and ADMIN - Role hierarchy USER < MANAGER < ADMIN implemented
+- [x] **User Management API**: Admin endpoints for role assignment and modification - PUT /users/{username}/roles, POST /users/{username}/activate|deactivate
+- [x] **Account Lifecycle**: Soft delete (deactivation) and reactivation endpoints - Full lifecycle management with privilege checks
 
 ## 3. Analytics & Reporting
 
@@ -32,12 +32,12 @@
 - [ ] **Upload API**: Multipart endpoint with validation (format, size, dimensions)
 - [ ] **Storage Integration**: Abstract storage layer supporting local/S3/MinIO backends
 
-## 6. Test Coverage
+## 6. Test Coverage ✅ (2026-05-18)
 
-- [ ] **Integration Tests**: JWT authentication flows (token issuance, validation, expiration)
-- [ ] **User API Tests**: CRUD operations and edge cases for user management
-- [ ] **Authorization Tests**: Verify 403 responses for insufficient privileges
-- [ ] **Security Tests**: Unauthorized access attempts, token tampering, injection attempts
+- [x] **Integration Tests**: JWT authentication flows (token issuance, validation, expiration) - AuthTestHelper for token management
+- [x] **User API Tests**: CRUD operations and edge cases for user management - All endpoints tested with RestAssured
+- [x] **Authorization Tests**: Verify 403 responses for insufficient privileges - RBAC tests for all role combinations
+- [x] **Security Tests**: Unauthorized access attempts, token tampering, injection attempts - DELETE endpoints protected
 
 ## 7. Infrastructure & DevOps
 

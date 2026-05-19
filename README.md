@@ -138,13 +138,21 @@ curl -X PUT http://localhost:8080/teas/{id} \
 ```
 
 #### Delete tea by ID
+
+**⚠️ Requires ADMIN or MANAGER role.**
+
 ```bash
-curl -X DELETE http://localhost:8080/teas/{id}
+curl -X DELETE http://localhost:8080/teas/{id} \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 #### Delete teas with filters
+
+**⚠️ Requires ADMIN role only.**
+
 ```bash
-curl -X DELETE 'http://localhost:8080/teas?category=GREEN'
+curl -X DELETE 'http://localhost:8080/teas?category=GREEN' \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
@@ -209,13 +217,21 @@ curl -X PUT http://localhost:8080/snacks/{id} \
 ```
 
 #### Delete snack by ID
+
+**⚠️ Requires ADMIN or MANAGER role.**
+
 ```bash
-curl -X DELETE http://localhost:8080/snacks/{id}
+curl -X DELETE http://localhost:8080/snacks/{id} \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 #### Delete all snacks
+
+**⚠️ Requires ADMIN role only.**
+
 ```bash
-curl -X DELETE http://localhost:8080/snacks
+curl -X DELETE http://localhost:8080/snacks \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 #### List sauces of a snack
@@ -229,8 +245,12 @@ curl -X POST http://localhost:8080/snacks/{snackId}/sauces/{sauceId}
 ```
 
 #### Remove sauce from a snack
+
+**⚠️ Requires ADMIN or MANAGER role.**
+
 ```bash
-curl -X DELETE http://localhost:8080/snacks/{snackId}/sauces/{sauceId}
+curl -X DELETE http://localhost:8080/snacks/{snackId}/sauces/{sauceId} \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
@@ -283,13 +303,21 @@ curl -X PUT http://localhost:8080/sauces/{id} \
 ```
 
 #### Delete sauce by ID
+
+**⚠️ Requires ADMIN or MANAGER role.**
+
 ```bash
-curl -X DELETE http://localhost:8080/sauces/{id}
+curl -X DELETE http://localhost:8080/sauces/{id} \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 #### Delete all sauces
+
+**⚠️ Requires ADMIN role only.**
+
 ```bash
-curl -X DELETE http://localhost:8080/sauces
+curl -X DELETE http://localhost:8080/sauces \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
@@ -391,6 +419,49 @@ Response:
     "roles": ["USER"]
   }
 ]
+```
+
+---
+
+### 🔐 RBAC (Role-Based Access Control)
+
+roles are: `USER`, `MANAGER`, and `ADMIN`. hierarchy is `USER < MANAGER < ADMIN`.
+
+#### Default Users (seeded)
+
+| Username | Password | Roles | Description |
+|----------|----------|-------|-------------|
+| `admin` | `admin123` | USER, ADMIN | Full access |
+| `manager` | `manager123` | USER, MANAGER | Can manage products and users |
+| `user` | `user123` | USER | Regular user, read-only |
+
+#### Update User Roles (ADMIN or MANAGER)
+
+**⚠️ Requires ADMIN or MANAGER role. MANAGERs can only manage USERs, ADMINs can manage anyone.**
+
+```bash
+curl -X PUT http://localhost:8080/auth/users/{username}/roles \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"roles": ["USER", "MANAGER"]}'
+```
+
+#### Activate User Account (ADMIN or MANAGER)
+
+**⚠️ Requires ADMIN or MANAGER role.**
+
+```bash
+curl -X POST http://localhost:8080/auth/users/{username}/activate \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Deactivate User Account (ADMIN or MANAGER)
+
+**⚠️ Requires ADMIN or MANAGER role. Soft delete - marks account as inactive.**
+
+```bash
+curl -X POST http://localhost:8080/auth/users/{username}/deactivate \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
